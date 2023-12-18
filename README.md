@@ -1,0 +1,1 @@
+Data and code to conduct the statistics and produce the figures of the preprint "A systematic review and meta-analysis on contrast sensitivity in schizophrenia". Linares, D., Joostens, A., de la Malla, C. 
