@@ -7,7 +7,8 @@ editor: visual
 ```{r}
 tabl_dem_clin_par <- tabl_raw |> 
   mutate(grey_levels = if_else(grey_levels == "not_implemented", 
-                               "not implemented", grey_levels)) |> 
+                               "not implemented", grey_levels), 
+         task = if_else(task == "2SFC", "2AFC", task)) |> 
   gt() |> 
   fmt_number(columns = c(cpz, sd_cpz, 
                          years_control, years_patient,
