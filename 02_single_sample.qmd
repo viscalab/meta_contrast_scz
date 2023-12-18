@@ -1,0 +1,398 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Temporal and spatial frequencies used
+
+```{r}
+studies_es_sf <- studies_es |> 
+  mutate(sf_mode = as.numeric(Mode(sf))) |> 
+  mutate(dist_mode = abs(sf - sf_mode)) |> 
+  group_by(study) |> 
+  mutate(min_dist_mode = min(dist_mode)) |> 
+  mutate(used = (dist_mode == min_dist_mode)) 
+
+studies_es_tf <- studies_es |> 
+  mutate(tf_mode = as.numeric(Mode(tf))) |> 
+  mutate(dist_mode = abs(tf - tf_mode)) |> 
+  group_by(study, sf) |> 
+  mutate(min_dist_mode = min(dist_mode)) |> 
+  mutate(used = (dist_mode == min_dist_mode)) 
+  
+```
+
+```{r}
+tf_mode <- studies_es_tf |> 
+  ungroup() |> 
+  slice(1:1) |> 
+  select(tf_mode) |> 
+  pull(tf_mode)
+
+sf_mode <- studies_es_sf |> 
+  ungroup() |> 
+  slice(1:1) |> 
+  select(sf_mode) |> 
+  pull(sf_mode)
+```
+
+Number of studies that use the modes
+
+```{r}
+n_tf_mode <-  studies_es |> 
+  filter(tf == tf_mode) |> 
+  distinct(study) |> 
+  nrow()
+
+n_sf_mode <- studies_es |> 
+  filter(sf == sf_mode) |> 
+  distinct(study) |> 
+  nrow()
+```
+
+```{r}
+n_studies_more_than_one_sf <- studies_es |> 
+  select(study, sf) |> 
+  group_by(study) |> 
+  distinct(sf) |> 
+  summarise(n = n()) |> 
+  filter(n > 1) |> 
+  nrow()
+
+n_studies_more_than_one_tf <- studies_es |> 
+  select(study, tf) |> 
+  group_by(study) |> 
+  distinct(tf) |> 
+  summarise(n = n()) |> 
+  filter(n > 1) |> 
+  nrow()
+
+```
+
+```{r}
+p_tf_used <- studies_es_tf |> 
+  mutate(used = if_else(used, "Considered temporal frequency", "Other temporal frequencies")) |> 
+  ggplot(aes(x = study, y = tf, color = used, shape = used)) +
+  geom_point() + 
+  coord_flip() + 
+  scale_x_discrete(limits = rev) +
+  labs(y = LABEL_TEMPORAL_FREQUENCY) +
+  scale_color_brewer(type = "qual", palette = "Set1") +
+  theme_minimal() +
+  theme(axis.title.y = element_blank(),
+        legend.position = "top",
+        legend.direction = "vertical",
+        legend.title = element_blank())
+
+p_sf_used <- studies_es_sf |> 
+  mutate(used = if_else(used, "Considered spatial frequency", "Other spatial frequencies")) |> 
+  ggplot(aes(x = study, y = sf, color = used, shape = used)) +
+  geom_point() +
+  coord_flip() + 
+  scale_x_discrete(limits = rev) +
+  labs(y = LABEL_SPATIAL_FREQUENCY) +
+  scale_color_brewer(type = "qual", palette = "Set1") +
+  theme_minimal() +
+  theme(axis.title.y = element_blank(),
+        legend.position = "top",
+        legend.direction = "vertical",
+        legend.title = element_blank(), 
+        axis.line.y = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        )
+
+p_tf_sf <- plot_grid(
+  p_tf_used,
+  p_sf_used, 
+  rel_widths = c(.55, .45)
+)
+
+ggsave("figures/paper/sup/p_tf_sf.pdf", p_tf_sf, 
+       width = 7.2, height = 7.2)
+
+ggsave("figures/paper/sup/p_tf_sf.png", p_tf_sf, 
+       width = 7.2, height = 7.2)
+
+```
+
+## Meta-analysis
+
+Selecting the samples
+
+```{r}
+studies_es_one_sf <- studies_es_sf |> 
+  filter(used) |> 
+  select(study, sf, tf)
+  
+studies_one_sample <- studies_es_tf |> 
+  filter(used) |> 
+  semi_join(studies_es_one_sf,
+            by = join_by(study, sf, tf)) 
+  
+```
+
+Performing meta-analysis
+
+```{r}
+meta_one_sample <- metagen(TE = es, seTE = se, 
+                           studlab = study, 
+                           fixed = FALSE, 
+                           random = TRUE,
+                           sm = "SMD", 
+                           hakn = TRUE,
+                           data = studies_one_sample)
+
+meta_one_sample
+```
+
+
+```{r}
+p_one_sample_forest <- as.ggplot(
+  ~forest(meta_one_sample,
+          print.tau2 = FALSE, 
+          print.I2 = FALSE, 
+          print.pval.Q = FALSE, 
+          fontsize = 12, 
+          xlab = "g",
+          smlab = "",
+          leftcols = c("studlab"),
+          leftlabs = c(""),
+          rightlabs = c("g", "95% CI", "Weight")), 
+  scale = 1, hjust = 0, vjust = 0.04)
+
+p_one_sample_forest
+```
+
+Publication bias
+
+```{r}
+meta_one_sample_eggers <- eggers.test(meta_one_sample)
+
+meta_one_sample_eggers
+```
+
+### Medication
+
+CPZ
+
+```{r}
+meta_one_sample_cpz <- metareg(meta_one_sample, ~ cpz)
+
+meta_one_sample_cpz
+```
+
+Variation of CPZ across the studies
+
+```{r}
+studies_one_sample_sd_cpz <- studies_one_sample |> 
+  ungroup() |>
+  drop_na(cpz) |> 
+  summarise(sd = sd(cpz)) |> 
+  pull(sd)
+
+```
+
+Mean variation of CPZ across the studies not reporting a significant correlation
+
+```{r}
+studies_one_sample_reporting_non_signif_cor <- studies_one_sample |> 
+  filter(study %in% c(
+    "2003b Chen",
+    "2005 Butler",
+    "2009 Butler",
+    "2013 Halasz",
+    "2014 Serrano",
+    "2017 Carter",
+    "2019 Fernandes")) 
+  
+studies_one_sample_reporting_non_signif_cor_mean_sd_cpz <- 
+  studies_one_sample_reporting_non_signif_cor |> 
+  ungroup() |>
+  summarise(sd = mean(sd_cpz)) |> 
+  pull(sd)
+
+```
+
+```{r}
+studies_one_sample_t_test_cpz <- t.test(
+  studies_one_sample_reporting_non_signif_cor |> 
+  ungroup() |>
+  drop_na(sd_cpz) |> 
+    pull(sd_cpz), 
+  mu = studies_one_sample_sd_cpz) |> 
+  tidy()
+
+
+```
+
+### Proportion of medicated patients
+
+```{r}
+meta_one_sample_p_med <- metareg(meta_one_sample, ~ p_med)
+
+meta_one_sample_p_med
+```
+
+### Severity of symptons
+
+```{r}
+meta_one_sample_panss <- metareg(meta_one_sample, ~ panss_t_meta)
+
+meta_one_sample_panss
+```
+
+### Illness duration
+
+```{r}
+meta_one_sample_dur_illness <- metareg(meta_one_sample, ~ dur_illness)
+
+meta_one_sample_dur_illness
+```
+
+### Gender
+
+```{r}
+meta_one_sample_p_gender <- metareg(meta_one_sample, ~ p_gender)
+
+meta_one_sample_p_gender
+```
+
+### size
+
+```{r}
+meta_one_sample_size <- metareg(meta_one_sample, ~ size)
+
+meta_one_sample_size
+```
+
+### duration
+
+```{r}
+meta_one_sample_duration <- metareg(meta_one_sample, ~ duration)
+
+meta_one_sample_duration
+```
+### Eccentricity
+
+```{r}
+meta_one_sample_ecc <- metareg(meta_one_sample, ~ ecc)
+
+meta_one_sample_ecc
+```
+
+
+```{r}
+p_one_sample_cpz <- ggplot(studies_one_sample |> 
+                             drop_na(cpz), 
+                           aes(x = cpz, y = es)) +
+    geom_abline(intercept = meta_one_sample_cpz |> 
+                tidy() |> 
+                filter(term == "intercept") |> 
+                pull(estimate), 
+              slope = meta_one_sample_cpz |> 
+                tidy() |> 
+                filter(term == "cpz") |> 
+                pull(estimate), 
+              color = "grey") +
+  geom_point() +
+  geom_text_repel(aes (label = study), size = 2.5) +
+  labs(x = LABEL_CPZ, y = LABEL_EFFECT_SIZE) +
+  theme_classic(16) +
+    theme(axis.line = element_line(linewidth = WIDTH_AXIS),
+        axis.ticks = element_line(linewidth = WIDTH_AXIS))
+
+p_one_sample_cpz
+```
+
+```{r}
+p_one_sample_funnel <- ggplot() +
+  geom_segment(aes(x = meta_one_sample$TE.random, 
+               xend = meta_one_sample$TE.random, 
+               y = 0, yend = .6), color = "grey") +
+  geom_segment(aes(x = meta_one_sample$TE.random, 
+               xend = meta_one_sample$TE.random + 1.96 * .6, 
+               y = 0, yend = .6),  color = "grey") +
+  geom_segment(aes(x = meta_one_sample$TE.random, 
+               xend = meta_one_sample$TE.random - 1.96 * .6, 
+               y = 0, yend = .6),  color = "grey") +
+  geom_point(data = studies_one_sample, aes(x = es, y = se)) +
+  scale_y_reverse(limits = c(.6, 0)) +
+  labs(x = LABEL_EFFECT_SIZE, y = "Standard error") +
+  theme_classic(16) +
+    theme(axis.line = element_line(linewidth = WIDTH_AXIS),
+          axis.ticks = element_line(linewidth = WIDTH_AXIS))
+
+p_one_sample_funnel
+```
+
+## Figure one-sample
+
+```{r}
+p_one_sample <- plot_grid(
+  plot_grid(p_one_sample_forest, labels = "A", label_size = 16), 
+  plot_grid(p_one_sample_funnel, p_one_sample_cpz, NA,
+            labels = c("B", "C", ""),
+            label_size = 16, 
+            ncol = 1, 
+            rel_heights = c(.48, .48, .04)), 
+  nrow = 1, 
+  rel_widths =   c(.62, .38)
+)
+
+ggsave("figures/paper/p_one_sample.pdf",
+       p_one_sample, 
+       width = 11.5, 
+       height = 9
+       )
+
+ggsave("figures/paper/p_one_sample.png",
+       p_one_sample,
+       width = 11.5,
+       height = 9
+       )
+```
+
+
+## Method used
+
+```{r}
+n_staircase_studies_one_sample <- studies_one_sample |> 
+  filter(method == "staircase") |> 
+  nrow()
+
+n_limits_studies_one_sample <- studies_one_sample |> 
+  filter(method == "limits") |> 
+  nrow()
+
+n_cs_studies_one_sample <- studies_one_sample |> 
+  filter(method == "CS") |> 
+  nrow()
+```
+
+## Age
+
+```{r}
+t.test(
+ studies_one_sample |> 
+    drop_na(years_control) |> 
+    pull(years_control),
+  studies_one_sample |> 
+    drop_na(years_patient) |> 
+    pull(years_patient)
+)
+```
+
+## SES
+
+```{r}
+t.test(
+  studies_one_sample |> 
+    drop_na(ses_control) |> 
+    pull(ses_control),
+  studies_one_sample |> 
+    drop_na(ses_patient) |> 
+    pull(ses_patient)
+)
+```

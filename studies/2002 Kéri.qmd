@@ -1,0 +1,78 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## tf = 0, sf
+
+```{r}
+keri_2002_tf_0_sf_scrap <- scrap_fun(
+  "../data_scrap/2002 Kéri tf 0 sf.csv",
+  log_y = TRUE,
+  sf = c(.5, 1.2, 1.9, 2.9, 3.6, 4.8, 5.7, 7.2, 14.4),
+  control = c("upper", "lower"), 
+  patient = c("upper", "lower")) |> 
+  mutate(tf = 0) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+keri_2002_tf_0_sf_long <- estimate_se(keri_2002_tf_0_sf_scrap, 
+            eb = "sd", 
+            ns = c(tabl |> filter(study == "2002 Kéri") |> pluck ("n_control"), 
+                   tabl |> filter(study == "2002 Kéri") |> pluck ("n_patient")))
+
+keri_2002_tf_0_sf <- keri_2002_tf_0_sf_long |> 
+  calculate_es(sf)
+
+keri_2002_tf_0_sf
+```
+
+## tf = 8, sf
+
+```{r}
+keri_2002_tf_8_sf_scrap <- scrap_fun(
+  "../data_scrap/2002 Kéri tf 8 sf.csv",
+  sf = c(.5, 1.2, 1.9, 2.9, 3.6, 4.8, 5.7, 7.2, 14.4),
+  log_y = FALSE,
+  control = c("upper", "lower"), 
+  patient = c("upper", "lower")) |> 
+  mutate(tf = 8) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+keri_2002_tf_8_sf_long <- estimate_se(keri_2002_tf_8_sf_scrap, 
+            eb = "sd", 
+            ns = c(tabl |> filter(study == "2002 Kéri") |> pluck ("n_control"), 
+                   tabl |> filter(study == "2002 Kéri") |> pluck ("n_patient")))
+
+keri_2002_tf_8_sf <- keri_2002_tf_8_sf_long |> 
+  calculate_es(sf)
+
+keri_2002_tf_8_sf
+```
+## Binding tables
+
+```{r}
+keri_2002_long <- keri_2002_tf_0_sf_long |> 
+  bind_rows(keri_2002_tf_8_sf_long) |> 
+  mutate(study = "2002 Kéri")
+
+keri_2002_long_plot <- keri_2002_long |> 
+  mutate(across(c(m, se, sd, lower, upper), ~ 10 ^.x))
+  
+```
+
+```{r}
+keri_2002 <- keri_2002_tf_0_sf |> 
+  bind_rows(keri_2002_tf_8_sf) |> 
+  mutate(study = "2002 Kéri")
+```
+
+```{r}
+save(keri_2002_long, file = "../RData/keri_2002_long.RData")
+save(keri_2002_long_plot, file = "../RData/keri_2002_long_plot.RData")
+save(keri_2002, file = "../RData/keri_2002.RData")
+```

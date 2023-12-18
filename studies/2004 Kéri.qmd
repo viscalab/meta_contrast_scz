@@ -1,0 +1,45 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+keri_2004_long <- tibble(study = "2004 Kéri", 
+                            sf = 1.5, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(2.8, 3.1), 
+                            sd = c(1.3, 1.9), 
+                            n = c(tabl |> filter(study == "2004 Kéri") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2004 Kéri") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+keri_2004_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+keri_2004_long_plot <- keri_2004_long |> 
+  mutate(across(c(m, lower, upper), ~ 100 / .x )) |> 
+  rename(lower = upper, upper = lower) |> 
+  select(-sd, -se)
+  
+```
+
+```{r}
+keri_2004 <- keri_2004_long |> 
+  calculate_es(reverse = TRUE)
+
+keri_2004
+```
+
+```{r}
+save(keri_2004_long, file = "../RData/keri_2004_long.RData")
+save(keri_2004_long_plot, file = "../RData/keri_2004_long_plot.RData")
+save(keri_2004, file = "../RData/keri_2004.RData")
+```

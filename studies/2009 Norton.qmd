@@ -1,0 +1,45 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+norton_2009_long <- tibble(study = "2009 Norton", 
+                            sf = 2, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(-2.66, -2.36), 
+                            sd = c(.16, .33), 
+                            n = c(tabl |> filter(study == "2009 Norton") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2009 Norton") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+norton_2009_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+norton_2009_long_plot <- norton_2009_long |> 
+  mutate(across(c(m, lower, upper), ~ 1 / 10^.x )) |> 
+  rename(lower = upper, upper = lower) |> 
+  select(-sd, -se)
+  
+```
+
+```{r}
+norton_2009 <- norton_2009_long |> 
+  calculate_es(reverse = TRUE)
+
+norton_2009
+```
+
+```{r}
+save(norton_2009_long, file = "../RData/norton_2009_long.RData")
+save(norton_2009_long_plot, file = "../RData/norton_2009_long_plot.RData")
+save(norton_2009, file = "../RData/norton_2009.RData")
+```

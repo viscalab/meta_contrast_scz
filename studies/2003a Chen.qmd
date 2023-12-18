@@ -1,0 +1,45 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+chen_2003_a_long <- tibble(study = "2003a Chen", 
+                            sf = .5, tf = 5, 
+                            cond = c("control", "patient"), 
+                            m = c(.0025, .0036), 
+                            sd = c(.0016, .0039), 
+                            n = c(tabl |> filter(study == "2003a Chen") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2003a Chen") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+chen_2003_a_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+chen_2003_a_long_plot <- chen_2003_a_long |> 
+  mutate(across(c(m, lower, upper), ~ 1 / .x)) |> 
+  rename(lower = upper, upper = lower) |> 
+  select(-sd, -se)
+  
+```
+
+```{r}
+chen_2003_a <- chen_2003_a_long |> 
+  calculate_es(reverse = TRUE)
+
+chen_2003_a
+```
+
+```{r}
+save(chen_2003_a_long, file = "../RData/chen_2003_a_long.RData")
+save(chen_2003_a_long_plot, file = "../RData/chen_2003_a_long_plot.RData")
+save(chen_2003_a, file = "../RData/chen_2003_a.RData")
+```

@@ -1,0 +1,60 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+shoshina_2014_sf_05_2_patients_long <- tibble(study = "2014 Shoshina", 
+                                   sf = .4, 
+                                   cond = c("control", "patient1", "patient2"),
+                                   m = c(15.2, 9.07, 11.4), 
+                                   sd = c(12, 6.6, 9.1), 
+                                   n = c(20, 25, 20))
+
+shoshina_2014_sf_36_2_patients_long <- tibble(study = "2014 Shoshina", 
+                                   sf = 3.6, 
+                                   cond = c("control", "patient1", "patient2"),
+                                   m = c(73.4, 65.5, 63.6), 
+                                   sd = c(39.8, 44.8, 34.1), 
+                                   n = c(20, 25, 20))
+
+shoshina_2014_sf_17_2_patients_long <- tibble(study = "2014 Shoshina", 
+                                   sf = 17.9, 
+                                   cond = c("control", "patient1", "patient2"),
+                                   m = c(16.4, 17.5, 14.5), 
+                                   sd = c(13.07, 15.4, 10.7), 
+                                   n = c(20, 25, 20))
+
+shoshina_2014_2_patients_long <- shoshina_2014_sf_05_2_patients_long |> 
+  bind_rows(shoshina_2014_sf_36_2_patients_long) |> 
+  bind_rows(shoshina_2014_sf_17_2_patients_long) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) |> 
+  mutate(tf = 0) |> 
+  relocate(tf, .after = sf)
+
+shoshina_2014_2_patients_long |>
+  mutate(cond = fct_relevel(cond, "patient2", "patient1")) |> 
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, fill = cond)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(position = position_dodge()) +
+  scale_x_log10() +
+  coord_flip() 
+```
+
+```{r}
+shoshina_2014_long <- shoshina_2014_2_patients_long |> 
+  pull_patients(sf)
+```
+
+```{r}
+shoshina_2014 <- shoshina_2014_long |> 
+  calculate_es(sf)
+```
+
+```{r}
+save(shoshina_2014_long, file = "../RData/shoshina_2014_long.RData")
+save(shoshina_2014, file = "../RData/shoshina_2014.RData")
+```

@@ -1,0 +1,47 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+sheremata_2004_2_patients_long <- tibble(study = "2004 Sheremata", 
+                            sf = .5, tf = 5, 
+                            cond = c("control", "patient1", "patient2"), 
+                            m = c(.0021, .0019, .0047), 
+                            sd = c(.0010, .0011, .0019), 
+                            n = c(17, 17, 10)) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+sheremata_2004_2_patients_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+sheremata_2004_long <- sheremata_2004_2_patients_long |> 
+  pull_patients(sf)
+```
+
+```{r}
+sheremata_2004 <- sheremata_2004_long |> 
+  calculate_es(sf, reverse = TRUE)
+
+sheremata_2004
+```
+
+```{r}
+sheremata_2004_long_plot <- sheremata_2004_long |> 
+  mutate(across(c(m, lower, upper), ~ 1 / .x)) |> 
+  rename(lower = upper, upper = lower) |> 
+  select(-sd, -se)
+  
+```
+
+```{r}
+save(sheremata_2004_long, file = "../RData/sheremata_2004_long.RData")
+save(sheremata_2004_long_plot, file = "../RData/sheremata_2004_long_plot.RData")
+save(sheremata_2004, file = "../RData/sheremata_2004.RData")
+```

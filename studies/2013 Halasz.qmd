@@ -1,0 +1,36 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+halasz_2013_scrap <- scrap_fun("../data_scrap/2013 Halasz.csv",
+                         log_y = FALSE,
+                         sf = c(.3, 10),
+                         control = c("upper", "lower"), 
+                         patient1 = c("upper", "lower"),
+                         patient2 = c("upper", "lower"))
+```
+
+```{r}
+halasz_2013_2_patient_long <- halasz_2013_scrap |> 
+  estimate_se(eb = "ci", ns = c(70, 21, 104))
+
+halasz_2013_long <- halasz_2013_2_patient_long |> 
+  pull_patients(sf, log_y = FALSE) |> 
+  mutate(tf = if_else(sf == 0.3, 18, 1)) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+halasz_2013 <- halasz_2013_long |> 
+  calculate_es(sf) 
+
+halasz_2013
+```
+
+```{r}
+save(halasz_2013_long, file = "../RData/halasz_2013_long.RData")
+save(halasz_2013, file = "../RData/halasz_2013.RData")
+```

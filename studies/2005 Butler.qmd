@@ -1,0 +1,31 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+butler_2005_scrap <- scrap_fun("../data_scrap/2005 Butler.csv",
+                             sf = c(.5, 1, 2, 4, 7, 10, 21), 
+                             control = c("upper", "m"), 
+                             patient = c("upper", "m")) |> 
+  mutate(tf = 0) |> 
+  relocate(tf, .after = sf)  
+```
+
+```{r}
+butler_2005_long <- estimate_se(butler_2005_scrap, 
+            eb = "se", 
+            ns = c(tabl |> filter(study == "2005 Butler") |> pluck ("n_control"), 
+                   tabl |> filter(study == "2005 Butler") |> pluck ("n_patient")))
+
+butler_2005 <- butler_2005_long |> 
+  calculate_es(sf)
+
+butler_2005
+```
+
+```{r}
+save(butler_2005_long, file = "../RData/butler_2005_long.RData")
+save(butler_2005, file = "../RData/butler_2005.RData")
+```

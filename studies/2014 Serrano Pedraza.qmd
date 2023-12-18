@@ -1,0 +1,36 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+Data provided by Dr. Serrano-Pedraza
+
+```{r}
+serrano_2014_long <- tibble(study = "2014 Serrano-Pedraza", 
+                            sf = 1, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(84.2, 32.3), 
+                            se = c(4.83, 3.40), 
+                            n = c(tabl |> filter(study == "2014 Serrano-Pedraza") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2014 Serrano-Pedraza") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(sd = se * sqrt(n), 
+         lower = m - se, 
+         upper = m + se)
+
+serrano_2014_long |> 
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+  geom_pointrange()
+```
+
+```{r}
+serrano_2014 <- serrano_2014_long |> 
+  calculate_es(sf)
+```
+
+```{r}
+save(serrano_2014_long, file = "../RData/serrano_2014_long.RData")
+save(serrano_2014, file = "../RData/serrano_2014.RData")
+```

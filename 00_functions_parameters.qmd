@@ -1,0 +1,100 @@
+---
+title: "Loading packages, functions and parameters"
+format: html
+editor: visual
+---
+
+## Packages
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(rlang)
+library(esc)
+library(meta)
+library(metafor)
+library(dmetar) # install from github: devtools::install_github("MathiasHarrer/dmetar")
+library(scales)
+library(cowplot)
+library(DescTools)
+library(ggplotify)
+library(broom)
+library(ggrepel)
+library(gt)
+
+# library(rlang)
+# library(broom)
+# library(tidyverse)
+# library(ggrepel)
+# library(googlesheets4)
+# library(esc)
+
+# library(meta)
+# library(metafor)
+# library(clubSandwich)
+# library(cowplot)
+# library(readxl)
+# library(DescTools)
+# library(scales)
+# library(ggplotify)
+# library(gt)
+```
+
+## Reading the table that transforms bprs to panss
+
+```{r}
+bprs_to_panss <- read_csv("data/bprs_to_panss.csv",
+                          show_col_types = FALSE) 
+```
+
+
+## Reading custome functions
+
+```{r}
+list.files("R", full.names = TRUE) |> walk(source)
+```
+
+## Reading precomputations
+
+```{r}
+list.files("RData", full.names = TRUE) |> 
+  walk(~ load(file = .x, envir = .GlobalEnv))
+```
+
+## Reading table with demographic, and clinical & stimulus parameters
+
+```{r}
+tabl_raw <- read_excel("data/dem_clin_par.xlsx", na = "NA")
+```
+
+## Adding proportions
+
+Adding the proportions of medicated patients and the proportion of females among patients
+
+```{r}
+tabl <- tabl_raw |> 
+  mutate(p_med = n_med / n_patient) |> 
+  relocate(p_med, .after = n_med) |>
+  mutate(p_gender = if_else(!is.na(f_patient), f_patient / n_patient, NA)) |> 
+  relocate(p_gender, .after = f_patient) 
+```
+
+
+
+## Parameters for the graphs
+
+```{r}
+LABEL_SCZ <- "Scz"
+LABEL_CONTROL <- "Control"
+
+LABEL_TEMPORAL_FREQUENCY <- "Temporal frequency (Hz)"
+LABEL_SPATIAL_FREQUENCY <- "Spatial frequency (c/deg)"
+LABEL_EFFECT_SIZE <- "g"
+LABEL_CONTRAST_SENSITIVITY <- "Contrast sensitivity"
+LABEL_CPZ <- "CPZ (mg/day)"
+
+SIZE_POINT_RANGE <- .25
+WIDTH_AXIS <- .25
+SINGLE_COLOR <- "darkgrey"
+LENGTH_PANEL_SPACING_Y <- 1
+```

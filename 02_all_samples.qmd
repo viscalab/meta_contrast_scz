@@ -1,0 +1,214 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Three-level meta-analysis
+
+```{r}
+meta_all_samples <- rma.mv(yi = es, 
+                   V = var, 
+                   slab = study,
+                   data = studies_es,
+                   random = ~ 1 | study/study_id, 
+                   test = "t", 
+                   method = "REML")
+
+meta_all_samples
+
+```
+
+## Subgroup Analyses
+
+```{r}
+meta_all_samples_tf <- rma.mv(yi = es, 
+                   V = var, 
+                   slab = study,
+                   data = studies_es,
+                   random = ~ 1 | study/study_id, 
+                   test = "t", 
+                   method = "REML", 
+                   mods = ~ tf)
+
+meta_all_samples_tf
+```
+
+```{r}
+# p_all_samples_tf <- as.ggplot(
+#   ~regplot(meta_all_samples_tf, 
+#            ci = FALSE,
+#            plim = c(0.25, .75),
+#            refline = 0, 
+#            xlab = LABEL_TEMPORAL_FREQUENCY,
+#            ylab = LABEL_EFFECT_SIZE), 
+#   scale = .85, hjust = 0, vjust = 0.1)
+
+p_meta_all_samples_tf <- ggplot(studies_es) +
+      geom_abline(intercept = meta_all_samples_tf |> 
+                tidy() |> 
+                filter(term == "intercept") |> 
+                pull(estimate), 
+              slope = meta_all_samples_tf |> 
+                tidy() |> 
+                filter(term == "tf") |> 
+                pull(estimate), 
+              color = "grey") +
+  geom_point(aes(x = tf, y = es), shape = 1, alpha = .5) +
+  labs(x = LABEL_TEMPORAL_FREQUENCY, y = LABEL_EFFECT_SIZE) +
+  theme_classic() +
+  theme(axis.line = element_line(linewidth = WIDTH_AXIS),
+        axis.ticks = element_line(linewidth = WIDTH_AXIS))
+
+p_meta_all_samples_tf
+```
+
+```{r}
+meta_all_samples_sf <- rma.mv(yi = es, 
+                   V = var, 
+                   slab = study,
+                   data = studies_es,
+                   random = ~ 1 | study/study_id, 
+                   test = "t", 
+                   method = "REML", 
+                   mods = ~ sf)
+
+meta_all_samples_sf
+
+p_meta_all_samples_sf <- ggplot(studies_es) +
+      geom_abline(intercept = meta_all_samples_sf |> 
+                tidy() |> 
+                filter(term == "intercept") |> 
+                pull(estimate), 
+              slope = meta_all_samples_sf |> 
+                tidy() |> 
+                filter(term == "sf") |> 
+                pull(estimate), 
+              color = "grey") +
+  geom_point(aes(x = sf, y = es), shape = 1, alpha = .5) +
+  labs(x = LABEL_SPATIAL_FREQUENCY, y = LABEL_EFFECT_SIZE) +
+  theme_classic() +
+  theme(axis.line = element_line(linewidth = WIDTH_AXIS),
+        axis.ticks = element_line(linewidth = WIDTH_AXIS))
+
+p_meta_all_samples_sf
+```
+
+## Figure tf and sf
+
+```{r}
+p_all_samples_tf_sf <- plot_grid(
+  p_meta_all_samples_sf,
+  p_meta_all_samples_tf, 
+  labels = "AUTO"
+)
+
+ggsave("figures/paper/p_all_samples_tf_sf.pdf",
+       p_all_samples_tf_sf, 
+       width = 4.9, 
+       height = 2.45
+       )
+
+ggsave("figures/paper/p_all_samples_tf_sf.png",
+       p_all_samples_tf_sf, 
+       width = 4.9, 
+       height = 2.45
+       )
+```
+
+```{r}
+meta_all_samples_cpz <- rma.mv(yi = es, 
+                   V = var, 
+                   slab = study,
+                   data = studies_es,
+                   random = ~ 1 | study/study_id, 
+                   test = "t", 
+                   method = "REML", 
+                   mods = ~ cpz)
+
+meta_all_samples_cpz
+```
+
+## Table moderators
+
+```{r}
+table_cpz <- create_table_moderator(meta_one_sample_cpz, "CPZ") 
+
+table_p_med <- create_table_moderator(meta_one_sample_p_med, "Prop. medicated") 
+
+table_panss <- create_table_moderator(meta_one_sample_panss, "PANSS total") 
+
+table_illness_dur <- create_table_moderator(meta_one_sample_dur_illness, "Illness duration") 
+
+table_illness_p_gender <- create_table_moderator(meta_one_sample_p_gender, "Patient gender") 
+
+table_illness_size <- create_table_moderator(meta_one_sample_size, "Stimulus size") 
+
+table_illness_duration <- create_table_moderator(meta_one_sample_duration, "Stimulus duration") 
+
+table_illness_ecc <- create_table_moderator(meta_one_sample_ecc, "Eccentricity") 
+
+table_sf <- create_table_moderator(meta_all_samples_sf, "Spatial frequency") 
+
+table_tf <- create_table_moderator(meta_all_samples_tf, "Temporal frequency") 
+
+table_cpz_all <- create_table_moderator(meta_all_samples_cpz, "CPZ ") 
+
+table_moderators <- table_cpz |> 
+  bind_rows(table_p_med) |> 
+  bind_rows(table_panss) |> 
+  bind_rows(table_illness_dur) |> 
+  bind_rows(table_illness_p_gender) |> 
+  bind_rows(table_illness_size) |> 
+  bind_rows(table_illness_duration) |> 
+  bind_rows(table_illness_ecc) |> 
+  bind_rows(table_sf) |> 
+  bind_rows(table_tf) |> 
+  bind_rows(table_cpz_all) |>
+  gt() |> 
+    cols_align("center") |> 
+      tab_row_group(
+    label = "Using all samples from each study",
+    rows = moderator %in% c("Spatial frequency", "Temporal frequency",
+    "CPZ ")) |>
+    tab_row_group(
+    label = "Using one sample from each study",
+    rows = moderator %in% c("CPZ", "Prop. medicated", "PANSS total", 
+                            "Illness duration", "Patient gender", 
+                            "Stimulus size", "Stimulus duration", "Eccentricity")) |> 
+
+  tab_spanner(
+    label = "Intercept", 
+    columns = c(estimate_intercept, statistic_intercept, p.value_intercept, ci_intercept)) |> 
+  tab_spanner(
+    label = "Slope", 
+    columns = c(estimate_slope, statistic_slope, p.value_slope, ci_slope)) |> 
+  cols_move(
+    columns = ci_intercept,
+    after = estimate_intercept) |> 
+    cols_move(
+    columns = ci_slope,
+    after = estimate_slope) |>
+  cols_label(
+    n_samples = "# samples",
+    estimate_intercept = "Estimate",
+    ci_intercept = "95% CI",
+    statistic_intercept = "t",
+    p.value_intercept = "P",
+    estimate_slope = "Estimate",
+    ci_slope = "95% CI",
+    statistic_slope = "t",
+    p.value_slope = "P"
+    ) |> 
+  tab_options(
+    column_labels.font.weight = "bold",
+    row_group.font.size = 14)
+
+
+table_moderators
+
+gtsave(table_moderators, "figures/paper/table_moderators.png")
+
+
+save(table_moderators, file = "RData/table_moderators.RData")
+```

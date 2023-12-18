@@ -1,0 +1,70 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+shoshina_2021a_lower_upper_scrap <- scrap_fun("../data_scrap/2021a Shoshina.csv",
+                             sf = c(.6, 2.8, 4.5, 8, 16),
+                             control = c("upper", "lower"), 
+                             patient = c("upper", "lower")) |> 
+  mutate(tf = 0) |> 
+  relocate(tf, .after = sf) |> 
+  select(-m)
+```
+
+```{r}
+shoshina_2021a_m_scrap <- scrap_fun("../data_scrap/2021am Shoshina.csv",
+                             sf = c(.6, 2.8, 4.5, 8, 16),
+                             control = c("upper", "m"), 
+                             patient = c("upper", "m")) |> 
+  mutate(tf = 0) |> 
+  relocate(tf, .after = sf) |> 
+  select(-lower, -upper) |> 
+  mutate(study = "2021a Shoshina")
+```
+
+```{r}
+shoshina_2021a_scrap <- shoshina_2021a_m_scrap |> 
+  left_join(shoshina_2021a_lower_upper_scrap, 
+            join_by(study, sf, tf, cond))
+
+shoshina_2021a_long <- shoshina_2021a_scrap |> 
+  estimate_se(eb = "iqr", 
+              ns = c(tabl |> filter(study == "2021a Shoshina") |> 
+                       pluck ("n_control") |> pluck(1), 
+                   tabl |> filter(study == "2021a Shoshina") |> 
+                     pluck ("n_patient") |> pluck(1)))
+```
+
+```{r}
+shoshina_2021a_es_estimated_from_graph <- shoshina_2021a_long |> 
+  calculate_es(sf)
+```
+
+```{r}
+shoshina_2021a_45 <- shoshina_2021a_es_estimated_from_graph |> 
+  filter(sf == 4.5)
+```
+
+```{r}
+shoshina_2021a_except_45 <- shoshina_2021a_es_estimated_from_graph |> 
+  filter(sf != 4.5) |> 
+  select(study, sf, tf) |> 
+  bind_cols(tibble(es = c(-1.76, -.47, -1.99, -.62), 
+                   ci.lo = c(-2.3, -.92, -2.54, -1.06), 
+                   ci.hi = c(-1.26, -.04, -1.47, -.18))) |> 
+  mutate(se = (ci.hi - ci.lo) / (2 * qt(.975, df = 100 - 1)))
+```
+
+```{r}
+shoshina_2021a <- shoshina_2021a_45 |> 
+  bind_rows(shoshina_2021a_except_45) |> 
+  arrange(sf)
+```
+
+```{r}
+save(shoshina_2021a, file = "../RData/shoshina_2021a.RData")
+save(shoshina_2021a_long, file = "../RData/shoshina_2021a_long.RData")
+```

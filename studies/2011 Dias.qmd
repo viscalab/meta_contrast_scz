@@ -1,0 +1,60 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+Not all participants performed the contrast sensitivity task. The number of participants is extracted from figure 8D.
+
+```{r}
+dias_2011_sf_05 <- esc_f(f = 10.7, 
+                           grp1n = 9, 
+                           grp2n = 20, 
+                           es.type = "g", 
+                           study = "2011 Dias") |> 
+  as_tibble() |> 
+  mutate(sf = .5, tf = 0) |> 
+  relocate(sf, tf)
+
+dias_2011_sf_05
+```
+
+```{r}
+dias_2011_sf_7 <- esc_f(f = 2.28, 
+                           grp1n = 9, 
+                           grp2n = 20, 
+                           es.type = "g", 
+                           study = "2011 Dias") |> 
+  as_tibble() |> 
+  mutate(sf = 7, tf = 0) |> 
+  relocate(sf, tf)
+
+dias_2011_sf_7
+```
+
+```{r}
+dias_2011_sf_21 <- esc_f(f = 2.08, 
+                           grp1n = 9, 
+                           grp2n = 20, 
+                           es.type = "g", 
+                           study = "2011 Dias") |> 
+  as_tibble() |> 
+  mutate(sf = 21, tf = 0) |> 
+  relocate(sf, tf)
+
+dias_2011_sf_21
+```
+
+```{r}
+dias_2011 <- dias_2011_sf_05 |> 
+  bind_rows(dias_2011_sf_7) |> 
+  bind_rows(dias_2011_sf_21) |> 
+  mutate(study = "2011 Dias") |> 
+  relocate(study)
+
+dias_2011
+```
+
+```{r}
+save(dias_2011, file = "../RData/dias_2011.RData")
+```

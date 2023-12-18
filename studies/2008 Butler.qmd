@@ -1,0 +1,80 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+butler_2008_tf_0_sf_05 <- esc_t(t = 2.9, 
+                           grp1n = tabl |> filter(study == "2008 Butler") |> 
+                             pluck ("n_control"), 
+                           grp2n = tabl |> filter(study == "2008 Butler") |> 
+                             pluck ("n_patient"), 
+                           es.type = "g", 
+                           study = "2008 Butler") |> 
+  as_tibble() |> 
+  mutate(sf = .5, tf = 0) |> 
+  relocate(sf, tf)
+
+butler_2008_tf_0_sf_05
+```
+
+```{r}
+butler_2008_tf_0_sf_7 <- esc_t(t = 3.4, 
+                           grp1n = tabl |> filter(study == "2008 Butler") |> 
+                             pluck ("n_control"), 
+                           grp2n = tabl |> filter(study == "2008 Butler") |> 
+                             pluck ("n_patient"), 
+                           es.type = "g", 
+                           study = "2008 Butler") |> 
+  as_tibble() |> 
+  mutate(sf = 7, tf = 0) |> 
+  relocate(sf, tf)
+
+butler_2008_tf_0_sf_7
+```
+
+```{r}
+butler_2008_tf_0_sf_21 <- esc_t(t = 3.5, 
+                           grp1n = tabl |> filter(study == "2008 Butler") |> 
+                             pluck ("n_control"), 
+                           grp2n = tabl |> filter(study == "2008 Butler") |> 
+                             pluck ("n_patient"), 
+                           es.type = "g", 
+                           study = "2008 Butler") |> 
+  as_tibble() |> 
+  mutate(sf = 21, tf = 0) |> 
+  relocate(sf, tf)
+
+butler_2008_tf_0_sf_21
+```
+
+```{r}
+butler_2008 <- butler_2008_tf_0_sf_05 |> 
+  bind_rows(butler_2008_tf_0_sf_7) |> 
+  bind_rows(butler_2008_tf_0_sf_21)
+```
+
+```{r}
+butler_2008_scrap <- scrap_fun("../data_scrap/2008 Butler.csv",
+                              log_x = TRUE, log_y = TRUE,
+                             sf = c(.5, 7, 21), 
+                             control = c("upper", "m"), 
+                             patient = c("upper", "m")) |> 
+  mutate(tf = 0) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+butler_2008_long <- butler_2008_scrap |> 
+  estimate_se(eb = "se", 
+               ns = c(tabl |> filter(study == "2008 Butler") |> pluck ("n_control"), 
+                      tabl |> filter(study == "2008 Butler") |> pluck ("n_patient")))
+
+```
+
+```{r}
+save(butler_2008_long, file = "../RData/butler_2008_long.RData")
+save(butler_2008, file = "../RData/butler_2008.RData")
+```
+

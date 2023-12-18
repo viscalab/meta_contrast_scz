@@ -1,0 +1,65 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+
+The significance (stars) on Table 2 indicates that the number after the mean is the standard error 
+
+```{r}
+kantrowitz_2009_05_long <- tibble(study = "2009 Kantrowitz", 
+                            sf = .5, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(79.8, 62.8), 
+                            se = c(4.6, 4.2), 
+                            n = c(tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_patient")))
+
+kantrowitz_2009_7_long <- tibble(study = "2009 Kantrowitz", 
+                            sf = 7, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(164, 109.4), 
+                            se = c(11.2, 8), 
+                            n = c(tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_patient")))
+
+kantrowitz_2009_21_long <- tibble(study = "2009 Kantrowitz", 
+                            sf = 21, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(10.8, 4.3), 
+                            se = c(1.7, 0.5), 
+                            n = c(tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_patient")))
+
+
+kantrowitz_2009_long <- kantrowitz_2009_05_long |> 
+  bind_rows(kantrowitz_2009_7_long) |> 
+  bind_rows(kantrowitz_2009_21_long) |> 
+  mutate(sd = se * sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+kantrowitz_2009_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+  geom_pointrange() +
+  geom_line()
+```
+
+```{r}
+kantrowitz_2009 <- kantrowitz_2009_long |> 
+  calculate_es(sf)
+
+kantrowitz_2009
+```
+
+```{r}
+save(kantrowitz_2009_long, file = "../RData/kantrowitz_2009_long.RData")
+save(kantrowitz_2009, file = "../RData/kantrowitz_2009.RData")
+```

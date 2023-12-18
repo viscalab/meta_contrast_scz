@@ -1,0 +1,58 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+martinez_2013_sf_1_long <- tibble(study = "2013 Martinez", 
+                            sf = 1.166, tf = 0, # mean .5, 1, 2
+                            cond = c("control", "patient"), 
+                            m = c(132.6, 79.4), 
+                            sd = c(38.3, 34), 
+                            n = c(tabl |> filter(study == "2013 Martinez") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2013 Martinez") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+martinez_2013_sf_1_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+martinez_2013_sf_7_long <- tibble(study = "2013 Martinez", 
+                            sf = 7, tf = 0, # mean 4, 7, 10
+                            cond = c("control", "patient"), 
+                            m = c(53.9, 34), 
+                            sd = c(34.7, 15.6), 
+                            n = c(tabl |> filter(study == "2013 Martinez") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2013 Martinez") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+martinez_2013_sf_7_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+martinez_2013_long <- martinez_2013_sf_1_long |> 
+  bind_rows(martinez_2013_sf_7_long)
+```
+
+```{r}
+martinez_2013 <- martinez_2013_long |> 
+  calculate_es(sf)
+```
+
+```{r}
+save(martinez_2013_long, file = "../RData/martinez_2013_long.RData")
+save(martinez_2013, file = "../RData/martinez_2013.RData")
+```

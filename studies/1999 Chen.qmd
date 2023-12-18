@@ -1,0 +1,80 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## tf = 0, sf
+
+```{r}
+chen_1999_tf_0_sf_long <- tibble(study = "1999 Chen", 
+                            sf = .5, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(291, 219), 
+                            se = c(36, 21), 
+                            n = c(tabl |> filter(study == "1999 Chen") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "1999 Chen") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(sd = se * sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+chen_1999_tf_0_sf_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+chen_1999_tf_0_sf <- chen_1999_tf_0_sf_long |> 
+  calculate_es(sf)
+
+chen_1999_tf_0_sf
+```
+
+## tf = 5, sf
+
+```{r}
+chen_1999_tf_5_sf_long <- tibble(study = "1999 Chen", 
+                            sf = .5, tf = 5, 
+                            cond = c("control", "patient"), 
+                            m = c(502, 484), 
+                            se = c(48, 47), 
+                            n = c(tabl |> filter(study == "1999 Chen") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "1999 Chen") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(sd = se * sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+chen_1999_tf_5_sf_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+chen_1999_tf_5_sf <- chen_1999_tf_5_sf_long |> 
+  calculate_es(sf)
+
+chen_1999_tf_5_sf
+```
+## Binding tables
+
+```{r}
+chen_1999_long <- chen_1999_tf_0_sf_long |> 
+  bind_rows(chen_1999_tf_5_sf_long)
+```
+
+```{r}
+chen_1999 <- chen_1999_tf_0_sf |> 
+  bind_rows(chen_1999_tf_5_sf) |> 
+  mutate(study = "1999 Chen")
+
+chen_1999
+```
+
+```{r}
+save(chen_1999_long, file = "../RData/chen_1999_long.RData")
+save(chen_1999, file = "../RData/chen_1999.RData")
+```

@@ -1,0 +1,78 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## sf = 0.9
+
+```{r}
+schwartz_1987_sf_09_tf_scrap <- scrap_fun(
+  "../data_scrap/1987 Schwartz sf 09 tf.csv",
+  log_x = FALSE, log_y = FALSE,
+  tf = c(.8, 3.25, 6.5, 26), 
+  control = c("lower", "m"), 
+  patient = c("upper", "m")) |> 
+  mutate(sf = .9) |> 
+  relocate(sf, .before = tf)
+```
+
+```{r}
+schwartz_1987_sf_09_tf_long <- schwartz_1987_sf_09_tf_scrap |> 
+  estimate_se(eb = "se", 
+                ns = c(tabl |> filter(study == "1987 Schwartz") |> 
+                         pluck ("n_control"), 
+                   tabl |> filter(study == "1987 Schwartz") |> 
+                     pluck ("n_patient")))
+
+schwartz_1987_sf_09_tf <- schwartz_1987_sf_09_tf_long |> 
+  calculate_es(tf)
+
+schwartz_1987_sf_09_tf
+```
+
+## sf = 15
+
+```{r}
+schwartz_1987_sf_15_tf_scrap <- scrap_fun(
+  "../data_scrap/1987 Schwartz sf 15 tf.csv",
+  log_x = FALSE, log_y = FALSE,
+  tf = c(.8, 3.25, 6.5, 26), 
+  control = c("lower", "m"), 
+  patient = c("lower", "m")) |> 
+  mutate(sf = 15) |> 
+  relocate(sf, .before = tf)
+```
+
+```{r}
+schwartz_1987_sf_15_tf_long <- schwartz_1987_sf_15_tf_scrap |> 
+  estimate_se(eb = "se", 
+              ns = c(tabl |> filter(study == "1987 Schwartz") |> 
+                       pluck ("n_control"), 
+                   tabl |> filter(study == "1987 Schwartz") |> 
+                     pluck ("n_patient")))
+
+schwartz_1987_sf_15_tf <- schwartz_1987_sf_15_tf_long |> 
+  calculate_es(tf)
+
+schwartz_1987_sf_15_tf
+```
+
+## Binding the tables
+
+```{r}
+schwartz_1987_long <- schwartz_1987_sf_09_tf_long |> 
+  bind_rows(schwartz_1987_sf_15_tf_long) |> 
+  mutate(study = "1987 Schwartz")
+```
+
+```{r}
+schwartz_1987 <- schwartz_1987_sf_09_tf |> 
+  bind_rows(schwartz_1987_sf_15_tf) |> 
+  mutate(study = "1987 Schwartz")
+```
+
+```{r}
+save(schwartz_1987_long, file = "../RData/schwartz_1987_long.RData")
+save(schwartz_1987, file = "../RData/schwartz_1987.RData")
+```

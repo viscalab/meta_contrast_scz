@@ -1,0 +1,40 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+The mean and standard deviation for the control group are calculated scrapping the data from Figure 1.
+
+```{r}
+revheim_2006_2_patients_long <- tibble(study = "2006 Revheim", 
+                            sf = .5, tf = 0, 
+                            cond = c("control", "patient1", "patient2"), 
+                            m = c(91.7, 43.7, 94.5), # 
+                            sd = c(8.69 * sqrt(10), 18.4, 28.9), 
+                            n = c(10, 9, 9)) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+revheim_2006_2_patients_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+revheim_2006_long <- revheim_2006_2_patients_long |> 
+  pull_patients(sf, log_y = TRUE)
+```
+
+```{r}
+revheim_2006 <- revheim_2006_long |> 
+  calculate_es(sf)
+
+revheim_2006
+```
+
+```{r}
+save(revheim_2006_long, file = "../RData/revheim_2006_long.RData")
+save(revheim_2006, file = "../RData/revheim_2006.RData")
+```

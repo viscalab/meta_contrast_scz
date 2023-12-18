@@ -1,0 +1,152 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## tf = 0, sf
+
+```{r}
+odonnell_2006_tf_0_sf_2_patients_long <- tibble(study = "2006 Odonnell", 
+                            sf = 9.9, tf = 0, 
+                            cond = c("control", "patient1", "patient2"), 
+                            m = c(1.74, 1.31, 1.45), 
+                            sd = c(.45, .53, .42), 
+                            n = c(40, 14, 10)) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+odonnell_2006_tf_0_sf_2_patients_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+odonnell_2006_tf_0_sf_long <- odonnell_2006_tf_0_sf_2_patients_long |> 
+  pull_patients(sf)
+```
+
+```{r}
+odonnell_2006_tf_0_sf <- odonnell_2006_tf_0_sf_long |> 
+  calculate_es(sf)
+
+odonnell_2006_tf_0_sf
+```
+
+## tf = 2.1, sf
+
+```{r}
+odonnell_2006_tf_2_sf_2_patients_long <- tibble(study = "2006 Odonnell", 
+                            sf = 9.9, tf = 2.1, 
+                            cond = c("control", "patient1", "patient2"), 
+                            m = c(2.13, 2, 1.88), 
+                            sd = c(.13, .28, .56), 
+                            n = c(40, 14, 10)) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+odonnell_2006_tf_2_sf_2_patients_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+odonnell_2006_tf_2_sf_long <- odonnell_2006_tf_2_sf_2_patients_long |> 
+  pull_patients(sf)
+```
+
+```{r}
+odonnell_2006_tf_2_sf <- odonnell_2006_tf_2_sf_long |> 
+  calculate_es(sf)
+
+odonnell_2006_tf_2_sf
+```
+
+## tf = 9.3, sf
+
+```{r}
+odonnell_2006_tf_9_sf_2_patients_long <- tibble(study = "2006 Odonnell", 
+                            sf = 9.9, tf = 9.3, 
+                            cond = c("control", "patient1", "patient2"), 
+                            m = c(2.08, 1.96, 1.87), 
+                            sd = c(.23, .40, .71), 
+                            n = c(40, 14, 10)) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+odonnell_2006_tf_9_sf_2_patients_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+odonnell_2006_tf_9_sf_long <- odonnell_2006_tf_9_sf_2_patients_long |> 
+  pull_patients(sf)
+```
+
+```{r}
+odonnell_2006_tf_9_sf <- odonnell_2006_tf_9_sf_long |> 
+  calculate_es(sf)
+
+odonnell_2006_tf_9_sf
+```
+
+## tf = 18.8, sf
+
+```{r}
+odonnell_2006_tf_18_sf_2_patients_long <- tibble(study = "2006 Odonnell", 
+                            sf = 9.9, tf = 18.8, 
+                            cond = c("control", "patient1", "patient2"), 
+                            m = c(1.57, 1.49, 1.29), 
+                            sd = c(.19, .24, .78), 
+                            n = c(40, 14, 10)) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+odonnell_2006_tf_18_sf_2_patients_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+odonnell_2006_tf_18_sf_long <- odonnell_2006_tf_18_sf_2_patients_long |> 
+  pull_patients(sf)
+```
+
+```{r}
+odonnell_2006_tf_18_sf <- odonnell_2006_tf_18_sf_long |> 
+  calculate_es(sf)
+
+odonnell_2006_tf_18_sf
+```
+
+## Binding tables
+
+```{r}
+odonnell_2006_long <- odonnell_2006_tf_0_sf_long |> 
+  bind_rows(odonnell_2006_tf_2_sf_long) |> 
+  bind_rows(odonnell_2006_tf_9_sf_long) |> 
+  bind_rows(odonnell_2006_tf_18_sf_long) 
+
+
+odonnell_2006_long_plot <- odonnell_2006_long |> 
+  mutate(across(c(m, se, sd, lower, upper), ~ 10 ^.x))
+```
+
+```{r}
+odonnell_2006 <- odonnell_2006_tf_0_sf |> 
+  bind_rows(odonnell_2006_tf_2_sf) |>
+  bind_rows(odonnell_2006_tf_9_sf) |> 
+  bind_rows(odonnell_2006_tf_18_sf) |> 
+  mutate(study = "2006 Odonnell")
+```
+
+```{r}
+save(odonnell_2006_long, file = "../RData/odonnell_2006_long.RData")
+save(odonnell_2006_long_plot, file = "../RData/odonnell_2006_long_plot.RData")
+save(odonnell_2006, file = "../RData/odonnell_2006.RData")
+```

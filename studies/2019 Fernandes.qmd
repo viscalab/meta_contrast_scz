@@ -1,0 +1,33 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+fernandes_2019_scrap <- scrap_fun("../data_scrap/2019 Fernandes.csv",
+                             sf = c(.2, .5, 1, 2, 5, 10, 20), 
+                             control = c("upper", "lower"), 
+                             patient1 = c("upper", "lower"), 
+                             patient2 = c("upper", "lower")) |> 
+  mutate(tf = 0) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+fernandes_2019_2_patients_long <- fernandes_2019_scrap |> 
+  estimate_se(eb = "se", ns = c(50, 25, 25))
+
+fernandes_2019_long <- fernandes_2019_2_patients_long |> 
+  pull_patients(sf, log_y = TRUE)
+```
+
+```{r}
+fernandes_2019 <- fernandes_2019_long |> 
+  calculate_es(sf)
+```
+
+```{r}
+save(fernandes_2019_long, file = "../RData/fernandes_2019_long.RData")
+save(fernandes_2019, file = "../RData/fernandes_2019.RData")
+```

@@ -1,0 +1,117 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## tf = 0, sf
+
+```{r}
+slaghuis_1998_tf_0_sf_scrap <- scrap_fun(
+  "../data_scrap/1998 Slaghuis tf 0 sf.csv",
+  log_y = FALSE,
+  sf = c(.5, 1, 2, 4, 8, 12),
+  control = c("upper", "m"), 
+  patient1 = c("upper", "m"),
+  patient2 = c("upper", "m")) |> 
+  mutate(tf = 0) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+slaghuis_1998_tf_0_sf_2_patients_long <- slaghuis_1998_tf_0_sf_scrap |> 
+  estimate_se(eb = "se", ns = c(15, 15, 15))
+
+slaghuis_1998_tf_0_sf_long <- slaghuis_1998_tf_0_sf_2_patients_long |> 
+  pull_patients(sf, log_y = FALSE)
+```
+
+```{r}
+slaghuis_1998_tf_0_sf <- slaghuis_1998_tf_0_sf_long |> 
+  calculate_es(sf)
+
+slaghuis_1998_tf_0_sf
+```
+
+## sf = 1, tf
+
+```{r}
+slaghuis_1998_sf_1_tf_scrap <- scrap_fun(
+  "../data_scrap/1998 Slaghuis sf 1 tf.csv",
+  log_y = FALSE,
+  tf = c(.75, 1.5, 3.0, 6.0, 12), 
+  control = c("upper", "m"), 
+  patient1 = c("upper", "m"),
+  patient2 = c("upper", "m")) |> 
+  mutate(sf = 1)
+```
+
+```{r}
+slaghuis_1998_sf_1_tf_2_patients_long <- slaghuis_1998_sf_1_tf_scrap |> 
+  estimate_se(eb = "se", ns = c(15, 15, 15))
+
+slaghuis_1998_sf_1_tf_long <- slaghuis_1998_sf_1_tf_2_patients_long |> 
+  pull_patients(tf, log_y = FALSE)
+```
+
+```{r}
+slaghuis_1998_sf_1_tf <- slaghuis_1998_sf_1_tf_long |> 
+  calculate_es(tf)  
+
+slaghuis_1998_sf_1_tf
+```
+
+## sf = 8, tf
+
+```{r}
+slaghuis_1998_sf_8_tf_scrap <- scrap_fun(
+  "../data_scrap/1998 Slaghuis sf 8 tf.csv",
+  log_y = FALSE,
+  tf = c(.75, 1.5, 3.0, 6.0, 12), 
+  control = c("upper", "m"), 
+  patient1 = c("upper", "m"),
+  patient2 = c("upper", "m")) |> 
+  mutate(sf = 8)
+```
+
+```{r}
+slaghuis_1998_sf_8_tf_2_patients_long <- slaghuis_1998_sf_8_tf_scrap |> 
+  estimate_se(eb = "se", ns = c(15, 15, 15))
+
+slaghuis_1998_sf_8_tf_long <- slaghuis_1998_sf_8_tf_2_patients_long |> 
+  pull_patients(tf, log_y = FALSE)
+```
+
+```{r}
+slaghuis_1998_sf_8_tf <- slaghuis_1998_sf_8_tf_long |> 
+  calculate_es(tf)
+
+slaghuis_1998_sf_8_tf
+```
+
+## Binding the tables
+
+and transforming the log contrast to sensitivity measures
+
+```{r}
+slaghuis_1998_long <- slaghuis_1998_tf_0_sf_long |> 
+  bind_rows(slaghuis_1998_sf_1_tf_long) |> 
+  bind_rows(slaghuis_1998_sf_8_tf_long)|> 
+  mutate(study = "1998 Slaghuis")
+
+slaghuis_1998_long_plot <- slaghuis_1998_long |> 
+  mutate(across(c(m, se, sd, lower, upper), ~ 10 ^.x))
+```
+
+```{r}
+slaghuis_1998 <- slaghuis_1998_tf_0_sf |> 
+  bind_rows(slaghuis_1998_sf_1_tf) |> 
+  bind_rows(slaghuis_1998_sf_8_tf) |> 
+  mutate(study = "1998 Slaghuis")
+```
+
+```{r}
+save(slaghuis_1998_long, file = "../RData/slaghuis_1998_long.RData")
+save(slaghuis_1998_long_plot, file = "../RData/slaghuis_1998_long_plot.RData")
+save(slaghuis_1998, file = "../RData/slaghuis_1998.RData")
+```

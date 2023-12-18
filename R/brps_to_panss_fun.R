@@ -1,0 +1,1 @@
+brps_to_panss_fun <- approxfun(bprs_to_panss$BPRS, bprs_to_panss$PANSS)

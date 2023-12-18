@@ -1,0 +1,33 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+schwartz_1985_scrap <- scrap_fun("../data_scrap/1985 Schwartz.csv",
+                                 sf = c(.5, 1, 2, 4, 8, 12),
+                                 control = c("upper", "m"), 
+                                 patient = c("lower", "m")) |> 
+  mutate(tf = 0) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+schwartz_1985_long <- schwartz_1985_scrap |> 
+  estimate_se(eb = "se", 
+              ns = c(tabl |> filter(study == "1985 Schwartz") |> 
+                        pluck ("n_control"), 
+                      tabl |> filter(study == "1985 Schwartz") |> 
+                        pluck ("n_patient")))
+
+schwartz_1985 <- schwartz_1985_long |> 
+  calculate_es(sf)
+
+schwartz_1985
+```
+
+```{r}
+save(schwartz_1985_long, file = "../RData/schwartz_1985_long.RData")
+save(schwartz_1985, file = "../RData/schwartz_1985.RData")
+```

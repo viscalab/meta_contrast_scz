@@ -1,0 +1,41 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+keri_2000_long <- tibble(study = "2000 Kéri", 
+                            sf = .5, tf = 8, 
+                            cond = c("control", "patient"), 
+                            m = c(3.9, 3.7), 
+                            sd = c(.6, .7), 
+                            n = c( tabl |> filter(study == "2000 Kéri") |> 
+                                     pluck ("n_control"),
+                                   tabl |> filter(study == "2000 Kéri") |> 
+                                     pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+keri_2000_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+keri_2000_long_plot <- keri_2000_long |> 
+  mutate(across(c(m, se, sd, lower, upper), ~ 10 ^.x))
+```
+
+```{r}
+keri_2000 <- keri_2000_long |> 
+  calculate_es()
+keri_2000
+```
+
+```{r}
+save(keri_2000_long, file = "../RData/keri_2000_long.RData")
+save(keri_2000_long_plot, file = "../RData/keri_2000_long_plot.RData")
+save(keri_2000, file = "../RData/keri_2000.RData")
+```

@@ -1,0 +1,42 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+cimmer_2006_scrap <- scrap_fun("../data_scrap/2006 Cimmer.csv",
+                            log_y = TRUE,
+                             sf = .5,
+                             patient1 = c("upper", "m"), 
+                             patient2 = c("upper", "m"), 
+                             control = c("upper", "m")) |> 
+  mutate(tf = 8) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+cimmer_2006_2_patients_long <- cimmer_2006_scrap |> 
+  estimate_se(eb = "ci", ns = c(32, 12, 20))
+
+cimmer_2006_long <- cimmer_2006_2_patients_long |> 
+  pull_patients(sf)
+```
+
+```{r}
+cimmer_2006_long_plot <- cimmer_2006_long |> 
+  mutate(across(c(m, se, sd, lower, upper), ~ 10^.x))
+```
+
+```{r}
+cimmer_2006 <- cimmer_2006_long |> 
+  calculate_es(sf)
+
+cimmer_2006
+```
+
+```{r}
+save(cimmer_2006_long, file = "../RData/cimmer_2006_long.RData")
+save(cimmer_2006_long_plot, file = "../RData/cimmer_2006_long_plot.RData")
+save(cimmer_2006, file = "../RData/cimmer_2006.RData")
+```

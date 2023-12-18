@@ -1,0 +1,149 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Calculation of the spatial frequency with more power
+
+```{r}
+library(reticulate)
+```
+
+```{python}
+# import numpy as np
+# import matplotlib.pyplot as plt
+# 
+# image_size_deg = 9  
+# degree_to_pixel = 100  
+# image_size_pixel = image_size_deg * degree_to_pixel 
+# dot_size_deg = 0.2
+# dots_per_color = 150
+# dot_size_pixel = int(dot_size_deg * degree_to_pixel)
+# 
+# def draw_dot(img, center, radius, color):
+#     y, x = np.ogrid[-center[1]:image_size_pixel-center[1], -center[0]:image_size_pixel-center[0]]
+#     mask = x*x + y*y <= radius*radius
+#     img[mask] = color
+#     return img
+# 
+# 
+# samples = range(0, 10000)
+# 
+# for i in samples:
+#   np.random.seed(i)
+#   rdk_image = np.full((image_size_pixel, image_size_pixel), 0, dtype=np.float64)
+#   for _ in range(dots_per_color):
+#       white_dot_position = np.random.randint(0, image_size_pixel, 2)
+#       rdk_image = draw_dot(rdk_image, white_dot_position, dot_size_pixel//2, 1)
+# 
+#       black_dot_position = np.random.randint(0, image_size_pixel, 2)
+#       rdk_image = draw_dot(rdk_image, black_dot_position, dot_size_pixel//2, -1)
+# 
+#   ft = np.fft.ifftshift(rdk_image)
+#   ft = np.fft.fft2(ft)
+#   ft = np.fft.fftshift(ft)
+# 
+#   ft += ft
+# 
+# ft = ft / len(samples)
+# 
+# 
+# ft_abs = abs(ft)
+# 
+# plt.clf()
+# plt.cla()
+# 
+# plt.set_cmap("gray")
+# plt.subplot(121)
+# plt.imshow(rdk_image)
+# 
+# 
+# plt.subplot(122)
+# plt.imshow(ft_abs)
+# plt.xlim([400, 500])
+# plt.ylim([500, 400])
+# plt.show()
+```
+
+```{python}
+# center_x, center_y = 450, 450
+# max_radius = int(np.sqrt(2) * 450)
+# 
+# y, x = np.ogrid[-center_y:900-center_y, -center_x:900-center_x]
+# distances = np.sqrt(x**2 + y**2)
+# 
+# radius_sums = {}
+# radius_counts = {}
+# 
+# for i in range(900):
+#     for j in range(900):
+#         radius = int(distances[i, j])
+#         if radius < max_radius:
+#             if radius not in radius_sums:
+#                 radius_sums[radius] = 0
+#                 radius_counts[radius] = 0
+#             radius_sums[radius] += ft_abs[i, j]
+#             radius_counts[radius] += 1
+# 
+# radius_averages = {r: radius_sums[r] / radius_counts[r] for r in radius_sums}
+# 
+# average_radius_values = [radius_averages[r] for r in sorted(radius_averages)]
+```
+
+```{r}
+# average_radius_values <- py$average_radius_values
+# 
+# power_radius <- average_radius_values |> 
+#   unlist() |> 
+#   as_tibble() |> 
+#   rowid_to_column() |> 
+#   rename(pix = rowid) |> 
+#   mutate(pix_value = pix * value) 
+#   
+# power_radius |> 
+#   ggplot(aes(pix, value)) +
+#   geom_line() +
+#   geom_point() +
+#   scale_x_log10()
+# 
+# mean_pix <- power_radius |> 
+#   filter(value == max(value)) |> 
+#   pull(pix)
+# 
+# 
+# spa_freq_2017_carter <- signif(mean_pix / py$image_size_deg, digits = 2)
+
+#save(spa_freq_2017_carter, file = "../RData/spa_freq_2017_carter.RData")
+load(file = "../RData/spa_freq_2017_carter.RData")
+```
+
+## Effect size calculation
+
+```{r}
+carter_2017_scrap <- scrap_fun("../data_scrap/2017 Carter.csv",
+                             sf = spa_freq_2017_carter, 
+                             control = c("upper", "m"), 
+                             patient = c("lower", "m")) |> 
+  mutate(tf = spa_freq_2017_carter * 10) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+carter_2017_long <- carter_2017_scrap |> 
+  estimate_se(eb = "ci", 
+               ns = c(tabl |> filter(study == "2017 Carter") |> 
+                        pluck ("n_control"), 
+                      tabl |> filter(study == "2017 Carter") |> 
+                        pluck ("n_patient")))
+
+carter_2017 <- carter_2017_long |> 
+  calculate_es(sf)
+
+carter_2017
+```
+
+```{r}
+save(carter_2017_long, file = "../RData/carter_2017_long.RData")
+save(carter_2017, file = "../RData/carter_2017.RData")
+```

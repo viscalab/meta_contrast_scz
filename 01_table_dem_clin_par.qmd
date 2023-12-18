@@ -1,0 +1,60 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+tabl_dem_clin_par <- tabl_raw |> 
+  mutate(grey_levels = if_else(grey_levels == "not_implemented", 
+                               "not implemented", grey_levels)) |> 
+  gt() |> 
+  fmt_number(columns = c(cpz, sd_cpz, 
+                         years_control, years_patient,
+                         dur_illness, 
+                         ses_control, ses_patient, 
+                         size, ecc),
+               n_sigfig = 3) |> 
+  sub_missing(
+    missing_text = "---"
+    ) |> 
+  cols_label(
+    study = "Study", 
+    data_extraction = "Data source",
+    n_control = "N controls",
+    n_patient = "N patients",
+    f_control = "N females\ncontrols",
+    f_patient = "N females patients",
+    years_control = "Age controls (years)",
+    years_patient = "Age patients (years)", 
+    n_med = "N medicated", 
+    cpz = "CPZ (mg/day)", 
+    sd_cpz = "SD CPZ (mg/day)", 
+    dur_illness = "Illness duration (years)", 
+    ses_control = "SES controls", 
+    ses_patient = "SES patients", 
+    PANSS_P = "PANSS P", 
+    PANSS_N = "PANSS N", 
+    PANSS_GP = "PANSS GP", 
+    normal_vis = "Visual acuity assessment", 
+    grey_levels = "Grey levels", 
+    task = "Task", 
+    method = "Method", 
+    size = "Size (deg)", 
+    duration = "Duration (ms)",
+    ecc = "Eccentricity (deg)"
+  ) |> 
+  cols_align(
+  align = "center"
+) |> 
+    tab_footnote(
+    footnote = "2IFC: Two-interval forced choice; 2AFC: Two-alternative forced choice",
+    locations = cells_column_labels(columns = task)
+  ) |> 
+    tab_options(
+    column_labels.font.weight = "bold",
+    row_group.font.size = 14)
+
+gtsave(tabl_dem_clin_par, "figures/paper/table_dem_clin_par.png", 
+       vwidth = 2300, vheight = 800)
+```
