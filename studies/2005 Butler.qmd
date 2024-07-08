@@ -6,6 +6,7 @@ editor: visual
 
 ```{r}
 butler_2005_scrap <- scrap_fun("../data_scrap/2005 Butler.csv",
+                               log = TRUE,
                              sf = c(.5, 1, 2, 4, 7, 10, 21), 
                              control = c("upper", "m"), 
                              patient = c("upper", "m")) |> 

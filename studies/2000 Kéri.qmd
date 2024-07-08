@@ -24,14 +24,14 @@ keri_2000_long |>
 ```
 
 ```{r}
-keri_2000_long_plot <- keri_2000_long |> 
-  mutate(across(c(m, se, sd, lower, upper), ~ 10 ^.x))
-```
-
-```{r}
 keri_2000 <- keri_2000_long |> 
   calculate_es()
 keri_2000
+```
+
+```{r}
+keri_2000_long_plot <- keri_2000_long |> 
+  mutate(across(c(m, se, sd, lower, upper), ~ 10 ^.x))
 ```
 
 ```{r}

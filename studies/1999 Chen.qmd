@@ -59,6 +59,7 @@ chen_1999_tf_5_sf <- chen_1999_tf_5_sf_long |>
 
 chen_1999_tf_5_sf
 ```
+
 ## Binding tables
 
 ```{r}

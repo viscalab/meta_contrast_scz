@@ -4,8 +4,7 @@ format: html
 editor: visual
 ---
 
-
-The significance (stars) on Table 2 indicates that the number after the mean is the standard error 
+The significance (stars) on Table 2 indicates that the number after the mean is the standard error
 
 ```{r}
 kantrowitz_2009_05_long <- tibble(study = "2009 Kantrowitz", 

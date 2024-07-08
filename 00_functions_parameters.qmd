@@ -21,23 +21,7 @@ library(ggplotify)
 library(broom)
 library(ggrepel)
 library(gt)
-
-# library(rlang)
-# library(broom)
-# library(tidyverse)
-# library(ggrepel)
-# library(googlesheets4)
-# library(esc)
-
-# library(meta)
-# library(metafor)
-# library(clubSandwich)
-# library(cowplot)
-# library(readxl)
-# library(DescTools)
-# library(scales)
-# library(ggplotify)
-# library(gt)
+library(clubSandwich)
 ```
 
 ## Reading the table that transforms bprs to panss
@@ -47,14 +31,13 @@ bprs_to_panss <- read_csv("data/bprs_to_panss.csv",
                           show_col_types = FALSE) 
 ```
 
-
 ## Reading custome functions
 
 ```{r}
 list.files("R", full.names = TRUE) |> walk(source)
 ```
 
-## Reading precomputations
+## Reading precomputed effect sizes for each study
 
 ```{r}
 list.files("RData", full.names = TRUE) |> 
@@ -76,10 +59,9 @@ tabl <- tabl_raw |>
   mutate(p_med = n_med / n_patient) |> 
   relocate(p_med, .after = n_med) |>
   mutate(p_gender = if_else(!is.na(f_patient), f_patient / n_patient, NA)) |> 
-  relocate(p_gender, .after = f_patient) 
+  relocate(p_gender, .after = f_patient) |> 
+  mutate(luminance = as.numeric(luminance))
 ```
-
-
 
 ## Parameters for the graphs
 

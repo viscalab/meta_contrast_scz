@@ -43,7 +43,8 @@ tabl_dem_clin_par <- tabl_raw |>
     method = "Method", 
     size = "Size (deg)", 
     duration = "Duration (ms)",
-    ecc = "Eccentricity (deg)"
+    ecc = "Eccentricity (deg)",
+    dv = "Depedent variable"
   ) |> 
   cols_align(
   align = "center"

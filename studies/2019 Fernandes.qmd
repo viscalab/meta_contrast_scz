@@ -6,6 +6,7 @@ editor: visual
 
 ```{r}
 fernandes_2019_scrap <- scrap_fun("../data_scrap/2019 Fernandes.csv",
+                                  log = TRUE,
                              sf = c(.2, .5, 1, 2, 5, 10, 20), 
                              control = c("upper", "lower"), 
                              patient1 = c("upper", "lower"), 

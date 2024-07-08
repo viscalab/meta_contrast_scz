@@ -9,7 +9,7 @@ editor: visual
 ```{r}
 keri_2002_tf_0_sf_scrap <- scrap_fun(
   "../data_scrap/2002 Kéri tf 0 sf.csv",
-  log_y = TRUE,
+  log_y_plot  = TRUE,
   sf = c(.5, 1.2, 1.9, 2.9, 3.6, 4.8, 5.7, 7.2, 14.4),
   control = c("upper", "lower"), 
   patient = c("upper", "lower")) |> 
@@ -35,7 +35,7 @@ keri_2002_tf_0_sf
 keri_2002_tf_8_sf_scrap <- scrap_fun(
   "../data_scrap/2002 Kéri tf 8 sf.csv",
   sf = c(.5, 1.2, 1.9, 2.9, 3.6, 4.8, 5.7, 7.2, 14.4),
-  log_y = FALSE,
+  log_y_plot = FALSE,
   control = c("upper", "lower"), 
   patient = c("upper", "lower")) |> 
   mutate(tf = 8) |> 
@@ -53,6 +53,7 @@ keri_2002_tf_8_sf <- keri_2002_tf_8_sf_long |>
 
 keri_2002_tf_8_sf
 ```
+
 ## Binding tables
 
 ```{r}

@@ -1,0 +1,64 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+The significance (stars) on Table 2 indicates that the number after the mean is the standard error
+
+```{r}
+kantrowitz_2009_05_long_short_dur <- tibble(study = "2009 Kantrowitz", 
+                            sf = .5, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(91.5, 62.0), 
+                            se = c(5.5, 4.7), 
+                            n = c(tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_patient")))
+
+kantrowitz_2009_7_long_short_dur <- tibble(study = "2009 Kantrowitz", 
+                            sf = 7, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(91.5, 82.9), 
+                            se = c(3.5, 3.2), 
+                            n = c(tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_patient")))
+
+kantrowitz_2009_21_long_short_dur <- tibble(study = "2009 Kantrowitz", 
+                            sf = 21, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(3.6, 3.2), 
+                            se = c(0.4, 0.2), 
+                            n = c(tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2009 Kantrowitz") |> 
+                                    pluck ("n_patient")))
+
+
+kantrowitz_2009_long_short_dur <- kantrowitz_2009_05_long_short_dur |> 
+  bind_rows(kantrowitz_2009_7_long_short_dur) |> 
+  bind_rows(kantrowitz_2009_21_long_short_dur) |> 
+  mutate(sd = se * sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+kantrowitz_2009_long_short_dur |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+  geom_pointrange() +
+  geom_line()
+```
+
+```{r}
+kantrowitz_2009_short_dur <- kantrowitz_2009_long_short_dur |> 
+  calculate_es(sf)
+
+kantrowitz_2009_short_dur
+```
+
+```{r}
+save(kantrowitz_2009_long_short_dur, file = "../RData/kantrowitz_2009_long_short_dur.RData")
+save(kantrowitz_2009_short_dur, file = "../RData/kantrowitz_2009_short_dur.RData")
+```

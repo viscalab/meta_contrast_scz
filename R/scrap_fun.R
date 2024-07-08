@@ -1,4 +1,4 @@
-scrap_fun <- function(.file, log_x = TRUE, log_y = TRUE, ...) {
+scrap_fun <- function(.file, log = FALSE, log_x_plot = TRUE, log_y_plot = TRUE, ...) {
   
   dots <- list2(...) 
   
@@ -39,21 +39,38 @@ scrap_fun <- function(.file, log_x = TRUE, log_y = TRUE, ...) {
       mutate(m = (upper + lower) / 2)
   }
   
-  dat <- dat |>
-    mutate(upper = if_else(is.na(upper), m + (m - lower), upper),
-           lower = if_else(is.na(lower),  m - (upper - m), lower)) 
+  
+  
+  
+  if (log == FALSE) {
+    dat <- dat |>
+      mutate(upper = if_else(is.na(upper), m + (m - lower), upper),
+             lower = if_else(is.na(lower),  m - (upper - m), lower))
+  }
+  else {
+    
+    dat <- dat |>
+      mutate(lower_log = log10(lower), 
+             upper_log = log10(upper), 
+             m_log = log10(m)) |> 
+      mutate(upper = if_else(is.na(upper), 10^(m_log + (m_log - lower_log)), upper),
+             lower = if_else(is.na(lower),  10^(m_log - (upper_log - m_log)), lower)) |> 
+      select(-lower_log, -upper_log, -m_log)
+  }
+    
+    
   
   p <- dat |>
     ggplot(aes(x = !!sym(names(l_x)), y = m, ymin = lower, ymax = upper, color = cond)) +
     geom_pointrange() +
     geom_line()
   
-  if (log_x) {
+  if (log_x_plot) {
     p <- p +
       scale_x_log10()
   }
   
-  if (log_y) {
+  if (log_y_plot) {
     p <- p +
       scale_y_log10()
   }

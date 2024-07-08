@@ -6,6 +6,7 @@ editor: visual
 
 ```{r}
 calderone_2013_scrap <- scrap_fun("../data_scrap/2013 Calderone.csv",
+                                  log = TRUE, 
                                log_y = TRUE,
                              sf = c(.5, 4), 
                              control = c("upper", "lower"), 

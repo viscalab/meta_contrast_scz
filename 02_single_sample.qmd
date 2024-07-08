@@ -117,7 +117,7 @@ ggsave("figures/paper/sup/p_tf_sf.png", p_tf_sf,
 
 ```
 
-## Meta-analysis
+## Meta-analysis all
 
 Selecting the samples
 
@@ -147,6 +147,13 @@ meta_one_sample <- metagen(TE = es, seTE = se,
 meta_one_sample
 ```
 
+```{r}
+meta_one_sample$pval.random
+```
+
+```{r}
+meta_one_sample$pval.Q
+```
 
 ```{r}
 p_one_sample_forest <- as.ggplot(
@@ -157,21 +164,21 @@ p_one_sample_forest <- as.ggplot(
           fontsize = 12, 
           xlab = "g",
           smlab = "",
-          leftcols = c("studlab"),
-          leftlabs = c(""),
+          leftcols = c("studlab", "sample.size"),
+          leftlabs = c("Study", "Sample size"),
           rightlabs = c("g", "95% CI", "Weight")), 
   scale = 1, hjust = 0, vjust = 0.04)
 
 p_one_sample_forest
+
+ggsave("figures/paper/sup/p_forest_all.pdf", p_one_sample_forest, 
+       width = 8, height = 9.1)
+
+ggsave("figures/paper/sup/p_forest_all.png", p_one_sample_forest, 
+       width = 8, height = 9.1)
 ```
 
-Publication bias
 
-```{r}
-meta_one_sample_eggers <- eggers.test(meta_one_sample)
-
-meta_one_sample_eggers
-```
 
 ### Medication
 
@@ -183,50 +190,6 @@ meta_one_sample_cpz <- metareg(meta_one_sample, ~ cpz)
 meta_one_sample_cpz
 ```
 
-Variation of CPZ across the studies
-
-```{r}
-studies_one_sample_sd_cpz <- studies_one_sample |> 
-  ungroup() |>
-  drop_na(cpz) |> 
-  summarise(sd = sd(cpz)) |> 
-  pull(sd)
-
-```
-
-Mean variation of CPZ across the studies not reporting a significant correlation
-
-```{r}
-studies_one_sample_reporting_non_signif_cor <- studies_one_sample |> 
-  filter(study %in% c(
-    "2003b Chen",
-    "2005 Butler",
-    "2009 Butler",
-    "2013 Halasz",
-    "2014 Serrano",
-    "2017 Carter",
-    "2019 Fernandes")) 
-  
-studies_one_sample_reporting_non_signif_cor_mean_sd_cpz <- 
-  studies_one_sample_reporting_non_signif_cor |> 
-  ungroup() |>
-  summarise(sd = mean(sd_cpz)) |> 
-  pull(sd)
-
-```
-
-```{r}
-studies_one_sample_t_test_cpz <- t.test(
-  studies_one_sample_reporting_non_signif_cor |> 
-  ungroup() |>
-  drop_na(sd_cpz) |> 
-    pull(sd_cpz), 
-  mu = studies_one_sample_sd_cpz) |> 
-  tidy()
-
-
-```
-
 ### Proportion of medicated patients
 
 ```{r}
@@ -235,59 +198,187 @@ meta_one_sample_p_med <- metareg(meta_one_sample, ~ p_med)
 meta_one_sample_p_med
 ```
 
-### Severity of symptons
+### Outliers and influential cases
 
 ```{r}
-meta_one_sample_panss <- metareg(meta_one_sample, ~ panss_t_meta)
+meta_one_sample_influential <- InfluenceAnalysis(meta_one_sample, random = TRUE)
 
-meta_one_sample_panss
+p_influential <- meta_one_sample_influential$Data |> 
+  mutate(Author = str_remove_all(Author, "Omitting ")) |> 
+  ggplot(aes(x = HetContrib, y = InfluenceEffectSize)) +
+  geom_text_repel(aes(label = Author)) +
+  geom_point(alpha = .5)  +
+  labs(x = "Overall heterogeneity contribution", y = "Influence on pooled result") +
+  theme_classic(14) +
+    theme(axis.line = element_line(linewidth = WIDTH_AXIS),
+        axis.ticks = element_line(linewidth = WIDTH_AXIS), 
+        legend.position = "none")
+
+p_influential
+
+ggsave("figures/paper/p_influential.pdf", p_influential, 
+       width = 3.5, height = 3.5)
+
+ggsave("figures/paper/p_influential.png", p_influential, 
+       width = 3.5, height = 3.5)
 ```
 
-### Illness duration
+## Chronic patients
 
 ```{r}
-meta_one_sample_dur_illness <- metareg(meta_one_sample, ~ dur_illness)
+studies_one_sample_chronic <- studies_one_sample |> 
+  filter(!(study %in% c("2021a Shoshina", "2010 Kiss")))
 
-meta_one_sample_dur_illness
+meta_one_sample_chronic <- metagen(TE = es, seTE = se, 
+                           studlab = study, 
+                           fixed = FALSE, 
+                           random = TRUE,
+                           sm = "SMD", 
+                           hakn = TRUE,
+                           data = studies_one_sample_chronic)
+
+meta_one_sample_chronic
 ```
 
-### Gender
-
 ```{r}
-meta_one_sample_p_gender <- metareg(meta_one_sample, ~ p_gender)
-
-meta_one_sample_p_gender
+meta_one_sample_chronic$pval.random
 ```
 
-### size
-
 ```{r}
-meta_one_sample_size <- metareg(meta_one_sample, ~ size)
-
-meta_one_sample_size
+meta_one_sample_chronic$pval.Q
 ```
 
-### duration
-
 ```{r}
-meta_one_sample_duration <- metareg(meta_one_sample, ~ duration)
+p_one_sample_chronic_forest <- as.ggplot(
+  ~forest(meta_one_sample_chronic,
+          print.tau2 = FALSE, 
+          print.I2 = FALSE, 
+          print.pval.Q = FALSE, 
+          fontsize = 12, 
+          xlab = "g",
+          smlab = "",
+          leftcols = c("studlab", "sample.size"),
+          leftlabs = c("Study", "Sample size"),
+          rightlabs = c("g", "95% CI", "Weight")), 
+  scale = 1, hjust = 0, vjust = 0.04)
 
-meta_one_sample_duration
+ggsave("figures/paper/p_forest_chronic.pdf", p_one_sample_chronic_forest, 
+       width = 8, height = 8.8)
+
+ggsave("figures/paper/p_forest_chronic.png", p_one_sample_chronic_forest, 
+       width = 8, height = 8.8)
 ```
-### Eccentricity
+
+### Publication bias
 
 ```{r}
-meta_one_sample_ecc <- metareg(meta_one_sample, ~ ecc)
+eggers.test(meta_one_sample_chronic)
+```
 
-meta_one_sample_ecc
+```{r}
+p_one_sample_funnel <- ggplot() +
+  geom_segment(aes(x = meta_one_sample_chronic$TE.random, 
+               xend = meta_one_sample_chronic$TE.random, 
+               y = 0, yend = .6), color = "grey") +
+  geom_segment(aes(x = meta_one_sample_chronic$TE.random, 
+               xend = meta_one_sample_chronic$TE.random + 1.96 * .6, 
+               y = 0, yend = .6),  color = "grey") +
+  geom_segment(aes(x = meta_one_sample_chronic$TE.random, 
+               xend = meta_one_sample_chronic$TE.random - 1.96 * .6, 
+               y = 0, yend = .6),  color = "grey") +
+  geom_point(data = studies_one_sample_chronic, aes(x = es, y = se)) +
+  scale_y_reverse(limits = c(.6, 0)) +
+  labs(x = LABEL_EFFECT_SIZE, y = "Standard error") +
+  theme_classic(16) +
+    theme(axis.line = element_line(linewidth = WIDTH_AXIS),
+          axis.ticks = element_line(linewidth = WIDTH_AXIS))
+
+ggsave("figures/paper/p_funnel.pdf", p_one_sample_funnel, 
+       width = 4, height = 4)
+
+ggsave("figures/paper/p_funnel.png", p_one_sample_funnel, 
+       width = 4, height = 4)
+```
+
+## Age
+
+```{r}
+ studies_one_sample_chronic |> 
+  drop_na(years_control) |>
+  ungroup() |> 
+  select(years_control) |> 
+  reframe(range = range(years_control), 
+          sd = sd(years_control))
+```
+
+```{r}
+ studies_one_sample_chronic |> 
+  drop_na(years_patient) |>
+  ungroup() |> 
+  select(years_patient) |> 
+  reframe(range = range(years_patient), 
+          sd = sd(years_patient))
+
+```
+
+```{r}
+t.test(
+ studies_one_sample_chronic |> 
+    drop_na(years_control) |> 
+    pull(years_control),
+  studies_one_sample_chronic |> 
+    drop_na(years_patient) |> 
+    pull(years_patient)
+)
+```
+
+## SES
+
+```{r}
+ studies_one_sample_chronic |> 
+  drop_na(ses_control) |>
+  ungroup() |> 
+  select(ses_control) |> 
+  reframe(range = range(ses_control), 
+          sd = sd(ses_control))
+```
+
+```{r}
+ studies_one_sample_chronic |> 
+  drop_na(ses_patient) |>
+  ungroup() |> 
+  select(ses_patient) |> 
+  reframe(range = range(ses_patient), 
+          sd = sd(ses_patient))
+```
+
+```{r}
+t.test(
+  studies_one_sample_chronic |> 
+    drop_na(ses_control) |> 
+    pull(ses_control),
+  studies_one_sample_chronic |> 
+    drop_na(ses_patient) |> 
+    pull(ses_patient)
+)
 ```
 
 
+
+### Medication
+
+CPZ
+
 ```{r}
-p_one_sample_cpz <- ggplot(studies_one_sample |> 
+meta_one_sample_chronic_cpz <- metareg(meta_one_sample_chronic, ~ cpz)
+
+meta_one_sample_chronic_cpz
+```
+```{r}
+p_one_sample_cpz <- ggplot(studies_one_sample_chronic |> 
                              drop_na(cpz), 
                            aes(x = cpz, y = es)) +
-    geom_abline(intercept = meta_one_sample_cpz |> 
+    geom_abline(intercept = meta_one_sample_chronic_cpz |> 
                 tidy() |> 
                 filter(term == "intercept") |> 
                 pull(estimate), 
@@ -306,59 +397,135 @@ p_one_sample_cpz <- ggplot(studies_one_sample |>
 p_one_sample_cpz
 ```
 
+
+### Proportion of medicated patients
+
 ```{r}
-p_one_sample_funnel <- ggplot() +
-  geom_segment(aes(x = meta_one_sample$TE.random, 
-               xend = meta_one_sample$TE.random, 
-               y = 0, yend = .6), color = "grey") +
-  geom_segment(aes(x = meta_one_sample$TE.random, 
-               xend = meta_one_sample$TE.random + 1.96 * .6, 
-               y = 0, yend = .6),  color = "grey") +
-  geom_segment(aes(x = meta_one_sample$TE.random, 
-               xend = meta_one_sample$TE.random - 1.96 * .6, 
-               y = 0, yend = .6),  color = "grey") +
-  geom_point(data = studies_one_sample, aes(x = es, y = se)) +
-  scale_y_reverse(limits = c(.6, 0)) +
-  labs(x = LABEL_EFFECT_SIZE, y = "Standard error") +
+meta_one_sample_chronic_p_med <- metareg(meta_one_sample_chronic, ~ p_med)
+
+meta_one_sample_chronic_p_med
+```
+
+### Illness duration
+
+```{r}
+meta_one_sample_chronic_dur_illness <- metareg(meta_one_sample_chronic, ~ dur_illness)
+
+meta_one_sample_chronic_dur_illness
+```
+
+### Gender
+
+```{r}
+meta_one_sample_chronic_p_gender <- metareg(meta_one_sample_chronic, ~ p_gender)
+
+meta_one_sample_chronic_p_gender
+```
+
+### size
+
+```{r}
+meta_one_sample_chronic_size <- metareg(meta_one_sample_chronic, ~ size)
+
+meta_one_sample_chronic_size
+```
+
+### luminance
+
+```{r}
+meta_one_sample_chronic_luminance <- metareg(meta_one_sample_chronic, ~ luminance)
+
+meta_one_sample_chronic_luminance
+```
+
+### duration
+
+```{r}
+meta_one_sample_chronic_duration <- metareg(meta_one_sample_chronic, ~ duration)
+
+meta_one_sample_chronic_duration
+```
+
+### Eccentricity
+
+```{r}
+meta_one_sample_chronic_ecc <- metareg(meta_one_sample_chronic, ~ ecc)
+
+meta_one_sample_chronic_ecc
+```
+
+```{r}
+meta_one_sample_chronic_without_serrano <- metagen(TE = es, seTE = se, 
+                           studlab = study, 
+                           fixed = FALSE, 
+                           random = TRUE,
+                           sm = "SMD", 
+                           hakn = TRUE,
+                           data = studies_one_sample_chronic |> 
+                             filter(study != "2014 Serrano-Pedraza"))
+
+meta_one_sample_chronic_without_serrano
+```
+
+```{r}
+studies_one_sample_chronic |> 
+  drop_na(duration) |> 
+  ungroup() |> 
+  summarise(m = mean(duration))
+
+studies_one_sample_chronic |> 
+  ggplot(aes(duration)) +
+  geom_histogram() +
+  scale_x_continuous(breaks = seq(0, 1000, 100)) +
+  scale_y_continuous(breaks = 1:10)
+```
+
+```{r}
+meta_one_sample_chronic_without_serrano_ecc <- metareg(meta_one_sample_chronic_without_serrano, ~ ecc)
+
+meta_one_sample_chronic_without_serrano_ecc
+```
+
+```{r}
+p_one_sample_ecc <- ggplot(studies_one_sample_chronic |> 
+                             drop_na(ecc), 
+                           aes(x = ecc, y = es)) +
+    geom_abline(intercept = meta_one_sample_chronic_ecc |>
+                tidy() |>
+                filter(term == "intercept") |>
+                pull(estimate),
+              slope = meta_one_sample_chronic_ecc |>
+                tidy() |>
+                filter(term == "ecc") |>
+                pull(estimate),
+              color = "darkgrey") +
+  geom_point() +
+  geom_text_repel(aes (label = study), size = 2.5) +
+  labs(x = "Eccentricity (deg)", y = LABEL_EFFECT_SIZE) +
   theme_classic(16) +
-    theme(axis.line = element_line(linewidth = WIDTH_AXIS),
-          axis.ticks = element_line(linewidth = WIDTH_AXIS))
-
-p_one_sample_funnel
+  theme(axis.line = element_line(linewidth = WIDTH_AXIS),
+        axis.ticks = element_line(linewidth = WIDTH_AXIS), 
+        legend.position = "none")
+  
+p_one_sample_ecc
 ```
 
-## Figure one-sample
+
+
+### Severity of symptons
 
 ```{r}
-p_one_sample <- plot_grid(
-  plot_grid(p_one_sample_forest, labels = "A", label_size = 16), 
-  plot_grid(p_one_sample_funnel, p_one_sample_cpz, NA,
-            labels = c("B", "C", ""),
-            label_size = 16, 
-            ncol = 1, 
-            rel_heights = c(.48, .48, .04)), 
-  nrow = 1, 
-  rel_widths =   c(.62, .38)
-)
+meta_one_sample_chronic_panss <- metareg(meta_one_sample_chronic, ~ panss_t_meta)
 
-ggsave("figures/paper/p_one_sample.pdf",
-       p_one_sample, 
-       width = 11.5, 
-       height = 9
-       )
-
-ggsave("figures/paper/p_one_sample.png",
-       p_one_sample,
-       width = 11.5,
-       height = 9
-       )
+meta_one_sample_chronic_panss
 ```
+
 
 
 ## Method used
 
 ```{r}
-n_staircase_studies_one_sample <- studies_one_sample |> 
+n_staircase_studies_one_sample <- studies_one_sample|> 
   filter(method == "staircase") |> 
   nrow()
 
@@ -367,32 +534,47 @@ n_limits_studies_one_sample <- studies_one_sample |>
   nrow()
 
 n_cs_studies_one_sample <- studies_one_sample |> 
-  filter(method == "CS") |> 
+  filter(method == "constant stimuli") |> 
   nrow()
 ```
 
-## Age
+
+
+## Type of task
 
 ```{r}
-t.test(
- studies_one_sample |> 
-    drop_na(years_control) |> 
-    pull(years_control),
-  studies_one_sample |> 
-    drop_na(years_patient) |> 
-    pull(years_patient)
-)
+studies_one_sample_chronic |> 
+  group_by(task) |> 
+  count()
 ```
 
-## SES
 
 ```{r}
-t.test(
-  studies_one_sample |> 
-    drop_na(ses_control) |> 
-    pull(ses_control),
-  studies_one_sample |> 
-    drop_na(ses_patient) |> 
-    pull(ses_patient)
-)
+studies_one_sample_chronic_2AFC <- studies_one_sample_chronic |> 
+                             filter(task %in% c("2IFC", "2SFC"))
+
+meta_one_sample_chronic_task <- metagen(TE = es, seTE = se, 
+                           studlab = study, 
+                           fixed = FALSE, 
+                           random = TRUE,
+                           sm = "SMD", 
+                           hakn = TRUE,
+                           data = studies_one_sample_chronic_2AFC)
+
+meta_one_sample_chronic_task
 ```
+
+```{r}
+studies_one_sample_chronic_2AFC |> 
+  drop_na(ecc) |> 
+  group_by(task) |> 
+  summarise(ecc = mean(ecc))
+```
+
+
+```{r}
+update(meta_one_sample_chronic_task, 
+       subgroup = task, 
+       tau.common = FALSE)
+```
+

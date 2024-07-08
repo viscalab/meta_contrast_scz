@@ -6,6 +6,7 @@ editor: visual
 
 ```{r}
 shoshina_2021a_lower_upper_scrap <- scrap_fun("../data_scrap/2021a Shoshina.csv",
+                                              log = TRUE,
                              sf = c(.6, 2.8, 4.5, 8, 16),
                              control = c("upper", "lower"), 
                              patient = c("upper", "lower")) |> 
@@ -55,7 +56,10 @@ shoshina_2021a_except_45 <- shoshina_2021a_es_estimated_from_graph |>
   bind_cols(tibble(es = c(-1.76, -.47, -1.99, -.62), 
                    ci.lo = c(-2.3, -.92, -2.54, -1.06), 
                    ci.hi = c(-1.26, -.04, -1.47, -.18))) |> 
-  mutate(se = (ci.hi - ci.lo) / (2 * qt(.975, df = 100 - 1)))
+  mutate(se = (ci.hi - ci.lo) / (2 * qt(.975, df = 100 - 1))) |> 
+  mutate(n_control = shoshina_2021a_45$n_control, 
+         n_patient = shoshina_2021a_45$n_patient, 
+         sample.size = shoshina_2021a_45$sample.size)
 ```
 
 ```{r}

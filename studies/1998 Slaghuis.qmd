@@ -9,7 +9,7 @@ editor: visual
 ```{r}
 slaghuis_1998_tf_0_sf_scrap <- scrap_fun(
   "../data_scrap/1998 Slaghuis tf 0 sf.csv",
-  log_y = FALSE,
+  log_y_plot = FALSE,
   sf = c(.5, 1, 2, 4, 8, 12),
   control = c("upper", "m"), 
   patient1 = c("upper", "m"),
@@ -38,7 +38,7 @@ slaghuis_1998_tf_0_sf
 ```{r}
 slaghuis_1998_sf_1_tf_scrap <- scrap_fun(
   "../data_scrap/1998 Slaghuis sf 1 tf.csv",
-  log_y = FALSE,
+  log_y_plot = FALSE,
   tf = c(.75, 1.5, 3.0, 6.0, 12), 
   control = c("upper", "m"), 
   patient1 = c("upper", "m"),
@@ -66,7 +66,7 @@ slaghuis_1998_sf_1_tf
 ```{r}
 slaghuis_1998_sf_8_tf_scrap <- scrap_fun(
   "../data_scrap/1998 Slaghuis sf 8 tf.csv",
-  log_y = FALSE,
+  log_y_plot = FALSE,
   tf = c(.75, 1.5, 3.0, 6.0, 12), 
   control = c("upper", "m"), 
   patient1 = c("upper", "m"),

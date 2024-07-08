@@ -6,7 +6,7 @@ editor: visual
 
 ```{r}
 cimmer_2006_scrap <- scrap_fun("../data_scrap/2006 Cimmer.csv",
-                            log_y = TRUE,
+                            log_y_plot  = TRUE,
                              sf = .5,
                              patient1 = c("upper", "m"), 
                              patient2 = c("upper", "m"), 

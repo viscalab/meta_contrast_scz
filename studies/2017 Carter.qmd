@@ -122,6 +122,7 @@ load(file = "../RData/spa_freq_2017_carter.RData")
 
 ```{r}
 carter_2017_scrap <- scrap_fun("../data_scrap/2017 Carter.csv",
+                               log = TRUE,
                              sf = spa_freq_2017_carter, 
                              control = c("upper", "m"), 
                              patient = c("lower", "m")) |> 
