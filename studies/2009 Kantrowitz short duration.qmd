@@ -7,7 +7,7 @@ editor: visual
 The significance (stars) on Table 2 indicates that the number after the mean is the standard error
 
 ```{r}
-kantrowitz_2009_05_long_short_dur <- tibble(study = "2009 Kantrowitz", 
+kantrowitz_2009_05_long_short_dur <- tibble(study = "2009 Kantrowitz short dur", 
                             sf = .5, tf = 0, 
                             cond = c("control", "patient"), 
                             m = c(91.5, 62.0), 
@@ -17,7 +17,7 @@ kantrowitz_2009_05_long_short_dur <- tibble(study = "2009 Kantrowitz",
                                   tabl |> filter(study == "2009 Kantrowitz") |> 
                                     pluck ("n_patient")))
 
-kantrowitz_2009_7_long_short_dur <- tibble(study = "2009 Kantrowitz", 
+kantrowitz_2009_7_long_short_dur <- tibble(study = "2009 Kantrowitz short dur", 
                             sf = 7, tf = 0, 
                             cond = c("control", "patient"), 
                             m = c(91.5, 82.9), 
@@ -27,7 +27,7 @@ kantrowitz_2009_7_long_short_dur <- tibble(study = "2009 Kantrowitz",
                                   tabl |> filter(study == "2009 Kantrowitz") |> 
                                     pluck ("n_patient")))
 
-kantrowitz_2009_21_long_short_dur <- tibble(study = "2009 Kantrowitz", 
+kantrowitz_2009_21_long_short_dur <- tibble(study = "2009 Kantrowitz short dur", 
                             sf = 21, tf = 0, 
                             cond = c("control", "patient"), 
                             m = c(3.6, 3.2), 

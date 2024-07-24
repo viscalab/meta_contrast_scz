@@ -178,8 +178,6 @@ ggsave("figures/paper/sup/p_forest_all.png", p_one_sample_forest,
        width = 8, height = 9.1)
 ```
 
-
-
 ### Medication
 
 CPZ
@@ -363,8 +361,6 @@ t.test(
 )
 ```
 
-
-
 ### Medication
 
 CPZ
@@ -374,6 +370,7 @@ meta_one_sample_chronic_cpz <- metareg(meta_one_sample_chronic, ~ cpz)
 
 meta_one_sample_chronic_cpz
 ```
+
 ```{r}
 p_one_sample_cpz <- ggplot(studies_one_sample_chronic |> 
                              drop_na(cpz), 
@@ -396,7 +393,6 @@ p_one_sample_cpz <- ggplot(studies_one_sample_chronic |>
 
 p_one_sample_cpz
 ```
-
 
 ### Proportion of medicated patients
 
@@ -510,8 +506,6 @@ p_one_sample_ecc <- ggplot(studies_one_sample_chronic |>
 p_one_sample_ecc
 ```
 
-
-
 ### Severity of symptons
 
 ```{r}
@@ -519,8 +513,6 @@ meta_one_sample_chronic_panss <- metareg(meta_one_sample_chronic, ~ panss_t_meta
 
 meta_one_sample_chronic_panss
 ```
-
-
 
 ## Method used
 
@@ -538,8 +530,6 @@ n_cs_studies_one_sample <- studies_one_sample |>
   nrow()
 ```
 
-
-
 ## Type of task
 
 ```{r}
@@ -547,7 +537,6 @@ studies_one_sample_chronic |>
   group_by(task) |> 
   count()
 ```
-
 
 ```{r}
 studies_one_sample_chronic_2AFC <- studies_one_sample_chronic |> 
@@ -571,10 +560,8 @@ studies_one_sample_chronic_2AFC |>
   summarise(ecc = mean(ecc))
 ```
 
-
 ```{r}
 update(meta_one_sample_chronic_task, 
        subgroup = task, 
        tau.common = FALSE)
 ```
-

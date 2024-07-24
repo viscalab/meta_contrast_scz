@@ -1,0 +1,26 @@
+---
+title: "Loading packages, functions and parameters"
+format: html
+editor: visual
+---
+
+
+## Reading table with demographic, and clinical & stimulus parameters
+
+```{r}
+tabl_raw_short_dur <- read_excel("data/dem_clin_par_short_dur.xlsx", na = "NA")
+```
+
+## Adding proportions
+
+Adding the proportions of medicated patients and the proportion of females among patients
+
+```{r}
+tabl_short_dur <- tabl_raw_short_dur |> 
+  mutate(p_med = n_med / n_patient) |> 
+  relocate(p_med, .after = n_med) |>
+  mutate(p_gender = if_else(!is.na(f_patient), f_patient / n_patient, NA)) |> 
+  relocate(p_gender, .after = f_patient) |> 
+  mutate(luminance = as.numeric(luminance))
+```
+

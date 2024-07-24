@@ -1,0 +1,124 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Contrast senstivity across studies
+
+For Dias 2011, the raw contrast sensitivity is not available.
+
+```{r}
+studies_long_short_dur <- list(schwartz_1985_long, 
+                     schwartz_1987_long, 
+                     slaghuis_1998_long_plot,
+                     chen_1999_long, 
+                     keri_2000_long_plot, 
+                     keri_2002_long_plot, 
+                     chen_2003_a_long_plot,
+                     chen_2003_b_long_plot,
+                     chen_2004_long_plot,
+                     sheremata_2004_long_plot,
+                     keri_2004_long_plot,
+                     butler_2005_long,
+                     revheim_2006_long,
+                     cimmer_2006_long_plot,
+                     chen_2006_long_plot,
+                     odonnell_2006_long_plot, 
+                     butler_2008_long,
+                     norton_2008_long,
+                     butler_2009_long, 
+                     kantrowitz_2009_long_short_dur,
+                     norton_2009_long_plot,
+                     kiss_2010_long_plot,
+                     halasz_2013_long,
+                     cadenhead_2013_long_plot,
+                     calderone_2013_long,
+                     toscano_2013_long,
+                     martinez_2013_long,
+                     serrano_2014_long,
+                     shoshina_2014_long, 
+                     carter_2017_long,
+                     fernandes_2018_long_plot, 
+                     fernandes_2019_long,
+                     zemon_2021_long_plot_short_dur,
+                     shoshina_2021a_long,
+                     shoshina_2021b_long, 
+                     qian_2022_long_short_dur) |> 
+  map_df(bind_rows) |> 
+  ungroup() |> 
+  mutate(cond = if_else(cond == "patient", LABEL_SCZ, LABEL_CONTROL)) 
+
+```
+
+## Effect size across studies
+
+```{r}
+studies_es_short_dur <- list(schwartz_1985, 
+                   schwartz_1987, 
+                   slaghuis_1998,
+                   chen_1999, 
+                   keri_2000, 
+                   keri_2002, 
+                   chen_2003_a, 
+                   chen_2003_b,
+                   chen_2004,
+                   sheremata_2004,
+                   keri_2004,
+                   butler_2005,
+                   revheim_2006,
+                   cimmer_2006,
+                   chen_2006,
+                   odonnell_2006, 
+                   butler_2008,
+                   norton_2008,
+                   butler_2009,
+                   kantrowitz_2009_short_dur,
+                   norton_2009,
+                   kiss_2010, 
+                   dias_2011, 
+                   halasz_2013,
+                   cadenhead_2013,
+                   calderone_2013,
+                   toscano_2013,
+                   martinez_2013,
+                   serrano_2014,
+                   shoshina_2014, 
+                   carter_2017,
+                   fernandes_2018, 
+                   fernandes_2019,
+                   zemon_2021_short_dur,
+                   shoshina_2021a,
+                   shoshina_2021b, 
+                   qian_2022_short_dur) |> 
+  map_df(bind_rows) |> 
+  ungroup() |> 
+  mutate(study = fct_rev(study), 
+         study_id = paste(study, sf, tf, sep = "_")) |> 
+  relocate(study_id, .before = "study") |> 
+  left_join(tabl_short_dur |> select(study, p_med), by = join_by(study)) |> 
+  left_join(tabl_short_dur |> select(study, p_gender), by = join_by(study)) |> 
+  left_join(tabl_short_dur |> select(study, cpz), by = join_by(study)) |> 
+  left_join(tabl_short_dur |> select(study, sd_cpz), by = join_by(study)) |> 
+  left_join(tabl_short_dur |> select(study, duration), by = join_by(study)) |> 
+  left_join(tabl_short_dur |>  select(study, dur_illness), by = join_by(study)) |> 
+  left_join(tabl_short_dur |> select(study, BPRS), by = join_by(study)) |> 
+  left_join(tabl_short_dur |> select(study, PANSS_N), by = join_by(study)) |> 
+  left_join(tabl_short_dur |> select(study, PANSS_P), by = join_by(study)) |> 
+  left_join(tabl_short_dur |> select(study, PANSS_GP), by = join_by(study)) |>
+  left_join(tabl_short_dur |> select(study, method), by = join_by(study)) |>
+  left_join(tabl_short_dur |> select(study, size), by = join_by(study)) |>
+  left_join(tabl_short_dur |> select(study, ecc), by = join_by(study)) |>
+  left_join(tabl_short_dur |> select(study, luminance), by = join_by(study)) |>
+  left_join(tabl_short_dur |> select(study, dv), by = join_by(study)) |>
+  left_join(tabl_short_dur |> select(study, ses_control, ses_patient), by = join_by(study)) |>
+  left_join(tabl_short_dur |> select(study, years_control, years_patient), by = join_by(study)) |>
+  left_join(tabl_short_dur |> select(study, task), by = join_by(study)) |>
+  mutate(full_panss = (!is.na(PANSS_N) & !is.na(PANSS_P) & !is.na(PANSS_GP)),
+         PANSS_T = if_else(full_panss, PANSS_N + PANSS_P + PANSS_GP, NA),
+         PANSS_from_BPRS = brps_to_panss_fun(BPRS),
+         panss_t_meta = if_else(!is.na(PANSS_T), PANSS_T, PANSS_from_BPRS)) 
+```
+
+
+

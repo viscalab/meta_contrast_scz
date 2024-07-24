@@ -1,0 +1,222 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Temporal and spatial frequencies used
+
+```{r}
+studies_es_sf_short_dur <- studies_es_short_dur |> 
+  mutate(sf_mode = as.numeric(Mode(sf))) |> 
+  mutate(dist_mode = abs(sf - sf_mode)) |> 
+  group_by(study) |> 
+  mutate(min_dist_mode = min(dist_mode)) |> 
+  mutate(used = (dist_mode == min_dist_mode)) 
+
+studies_es_tf_short_dur <- studies_es_short_dur |> 
+  mutate(tf_mode = as.numeric(Mode(tf))) |> 
+  mutate(dist_mode = abs(tf - tf_mode)) |> 
+  group_by(study, sf) |> 
+  mutate(min_dist_mode = min(dist_mode)) |> 
+  mutate(used = (dist_mode == min_dist_mode)) 
+  
+```
+
+```{r}
+tf_mode_short_dur <- studies_es_tf_short_dur |> 
+  ungroup() |> 
+  slice(1:1) |> 
+  select(tf_mode) |> 
+  pull(tf_mode)
+
+sf_mode_short_dur <- studies_es_sf_short_dur |> 
+  ungroup() |> 
+  slice(1:1) |> 
+  select(sf_mode) |> 
+  pull(sf_mode)
+```
+
+Number of studies that use the modes
+
+```{r}
+n_tf_mode_short_dur <-  studies_es_short_dur |> 
+  filter(tf == tf_mode) |> 
+  distinct(study) |> 
+  nrow()
+
+n_sf_mode_short_dur <- studies_es_short_dur |> 
+  filter(sf == sf_mode) |> 
+  distinct(study) |> 
+  nrow()
+```
+
+```{r}
+n_studies_more_than_one_sf_short_dur <- studies_es_short_dur |> 
+  select(study, sf) |> 
+  group_by(study) |> 
+  distinct(sf) |> 
+  summarise(n = n()) |> 
+  filter(n > 1) |> 
+  nrow()
+
+n_studies_more_than_one_tf_short_dur <- studies_es_short_dur |> 
+  select(study, tf) |> 
+  group_by(study) |> 
+  distinct(tf) |> 
+  summarise(n = n()) |> 
+  filter(n > 1) |> 
+  nrow()
+
+```
+
+```{r}
+p_tf_used_short_dur <- studies_es_tf_short_dur |> 
+  mutate(used = if_else(used, "Considered temporal frequency", "Other temporal frequencies")) |> 
+  ggplot(aes(x = study, y = tf, color = used, shape = used)) +
+  geom_point() + 
+  coord_flip() + 
+  scale_x_discrete(limits = rev) +
+  labs(y = LABEL_TEMPORAL_FREQUENCY) +
+  scale_color_brewer(type = "qual", palette = "Set1") +
+  theme_minimal() +
+  theme(axis.title.y = element_blank(),
+        legend.position = "top",
+        legend.direction = "vertical",
+        legend.title = element_blank())
+
+p_sf_used_short_dur <- studies_es_sf_short_dur |> 
+  mutate(used = if_else(used, "Considered spatial frequency", "Other spatial frequencies")) |> 
+  ggplot(aes(x = study, y = sf, color = used, shape = used)) +
+  geom_point() +
+  coord_flip() + 
+  scale_x_discrete(limits = rev) +
+  labs(y = LABEL_SPATIAL_FREQUENCY) +
+  scale_color_brewer(type = "qual", palette = "Set1") +
+  theme_minimal() +
+  theme(axis.title.y = element_blank(),
+        legend.position = "top",
+        legend.direction = "vertical",
+        legend.title = element_blank(), 
+        axis.line.y = element_blank(), 
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        )
+
+p_tf_sf_short_dur <- plot_grid(
+  p_tf_used_short_dur,
+  p_sf_used_short_dur, 
+  rel_widths = c(.55, .45)
+)
+
+ggsave("figures/paper/sup/p_tf_sf_short_dur.pdf", p_tf_sf_short_dur, 
+       width = 7.2, height = 7.2)
+
+ggsave("figures/paper/sup/p_tf_sf_short_dur.png", p_tf_sf_short_dur, 
+       width = 7.2, height = 7.2)
+
+```
+
+## Meta-analysis all
+
+Selecting the samples
+
+```{r}
+studies_es_one_sf_short_dur <- studies_es_sf_short_dur |> 
+  filter(used) |> 
+  select(study, sf, tf)
+  
+studies_one_sample_short_dur <- studies_es_tf_short_dur |> 
+  filter(used) |> 
+  semi_join(studies_es_one_sf_short_dur,
+            by = join_by(study, sf, tf)) 
+  
+```
+
+Performing meta-analysis
+
+```{r}
+meta_one_sample_short_dur <- metagen(TE = es, seTE = se, 
+                           studlab = study, 
+                           fixed = FALSE, 
+                           random = TRUE,
+                           sm = "SMD", 
+                           hakn = TRUE,
+                           data = studies_one_sample_short_dur)
+
+meta_one_sample_short_dur
+```
+
+
+```{r}
+meta_one_sample_short_dur$pval.random
+```
+
+```{r}
+meta_one_sample_short_dur$pval.Q
+```
+
+```{r}
+p_one_sample_forest_short_dur <- as.ggplot(
+  ~forest(meta_one_sample_short_dur,
+          print.tau2 = FALSE, 
+          print.I2 = FALSE, 
+          print.pval.Q = FALSE, 
+          fontsize = 12, 
+          xlab = "g",
+          smlab = "",
+          leftcols = c("studlab", "sample.size"),
+          leftlabs = c("Study", "Sample size"),
+          rightlabs = c("g", "95% CI", "Weight")), 
+  scale = 1, hjust = 0, vjust = 0.04)
+
+
+ggsave("figures/paper/sup/p_forest_all_short_dur.pdf", p_one_sample_forest_short_dur, 
+       width = 8, height = 9.1)
+
+ggsave("figures/paper/sup/p_forest_all_short_dur.png", p_one_sample_forest_short_dur, 
+       width = 8, height = 9.1)
+```
+
+```{r}
+studies_one_sample_short_dur |> 
+  drop_na(duration) |> 
+  mutate(dur_cat = if_else(duration > 100, "long", "short")) |> 
+  group_by(dur_cat) |> 
+  count()
+
+```
+
+## Chronic patients
+
+```{r}
+studies_one_sample_chronic_short_dur <- studies_one_sample_short_dur |> 
+  filter(!(study %in% c("2021a Shoshina", "2010 Kiss")))
+
+meta_one_sample_chronic_short_dur <- metagen(TE = es, seTE = se, 
+                           studlab = study, 
+                           fixed = FALSE, 
+                           random = TRUE,
+                           sm = "SMD", 
+                           hakn = TRUE,
+                           data = studies_one_sample_chronic_short_dur)
+
+meta_one_sample_chronic_short_dur
+```
+
+```{r}
+meta_one_sample_chronic_short_dur$pval.random
+```
+
+```{r}
+meta_one_sample_chronic_short_dur$pval.Q
+```
+
+
+### duration
+
+```{r}
+meta_one_sample_chronic_duration_short_dur <- metareg(meta_one_sample_chronic_short_dur, ~ duration)
+
+meta_one_sample_chronic_duration_short_dur
+```

@@ -50,7 +50,7 @@ tabl_dem_clin_par <- tabl_raw |>
   align = "center"
 ) |> 
     tab_footnote(
-    footnote = "2IFC: Two-interval forced choice; 2AFC: Two-alternative forced choice",
+    footnote = "2IFC: Two-interval forced choice; 2AFC: Spatial two-alternative forced choice",
     locations = cells_column_labels(columns = task)
   ) |> 
     tab_options(
