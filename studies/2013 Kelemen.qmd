@@ -1,0 +1,60 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+kelemen_2013_sf_03_tf_18_long <- tibble(study = "2013 Kelemen", 
+                            sf = .3, tf = 18, 
+                            cond = c("control", "patient"), 
+                            m = c(88.2, 68.2), 
+                            sd = c(9.9, 10), 
+                            n = c(tabl |> filter(study == "2013 Kelemen") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2013 Kelemen") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+kelemen_2013_sf_03_tf_18_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+kelemen_2013_sf_10_tf_1_long <- tibble(study = "2013 Kelemen", 
+                            sf = 10, tf = 1, 
+                            cond = c("control", "patient"), 
+                            m = c(65.1, 53.2), 
+                            sd = c(15, 11.8), 
+                            n = c(tabl |> filter(study == "2013 Kelemen") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2013 Kelemen") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+kelemen_2013_sf_10_tf_1_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+kelemen_2013_long <- kelemen_2013_sf_03_tf_18_long |> 
+  bind_rows(kelemen_2013_sf_10_tf_1_long)
+```
+
+```{r}
+kelemen_2013 <- kelemen_2013_long |> 
+  calculate_es(sf)
+
+kelemen_2013
+```
+
+```{r}
+save(kelemen_2013_long, file = "../RData/kelemen_2013_long.RData")
+save(kelemen_2013, file = "../RData/kelemen_2013.RData")
+```

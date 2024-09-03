@@ -1,0 +1,36 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+lima_2013_long <- tibble(study = "2013 Lima", 
+                            sf = NA, tf = 50, 
+                            cond = c("control", "patient"), 
+                            m = c(32.17, 30.97), 
+                            sd = c(3.08, 2.25), 
+                            n = c(tabl |> filter(study == "2013 Lima") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2013 Lima") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+lima_2013_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+lima_2013 <- lima_2013_long |> 
+  calculate_es()
+
+lima_2013
+```
+
+```{r}
+save(lima_2013_long, file = "../RData/lima_2013_long.RData")
+save(lima_2013, file = "../RData/lima_2013.RData")
+```

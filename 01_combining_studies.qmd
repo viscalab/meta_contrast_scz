@@ -6,13 +6,11 @@ editor: visual
 
 ## Contrast senstivity across studies
 
-For Dias 2011, the raw contrast sensitivity is not available.
-
 ```{r}
 studies_long <- list(schwartz_1985_long, 
                      schwartz_1987_long, 
                      slaghuis_1998_long_plot,
-                     chen_1999_long, 
+                     chen_1999_long,
                      keri_2000_long_plot, 
                      keri_2002_long_plot, 
                      chen_2003_a_long_plot,
@@ -30,7 +28,10 @@ studies_long <- list(schwartz_1985_long,
                      butler_2009_long, 
                      kantrowitz_2009_long,
                      norton_2009_long_plot,
+                     brittain_2010_long_plot,
                      kiss_2010_long_plot,
+                     chen_2011_long_plot,
+                     kelemen_2013_long,
                      halasz_2013_long,
                      cadenhead_2013_long_plot,
                      calderone_2013_long,
@@ -44,7 +45,8 @@ studies_long <- list(schwartz_1985_long,
                      zemon_2021_long_plot,
                      shoshina_2021a_long,
                      shoshina_2021b_long, 
-                     qian_2022_long) |> 
+                     qian_2022_long,
+                     kadivar_2024_long_plot) |> 
   map_df(bind_rows) |> 
   ungroup() |> 
   mutate(cond = if_else(cond == "patient", LABEL_SCZ, LABEL_CONTROL)) 
@@ -66,31 +68,40 @@ studies_es <- list(schwartz_1985,
                    sheremata_2004,
                    keri_2004,
                    butler_2005,
+                   bidwell_2006,
                    revheim_2006,
                    cimmer_2006,
                    chen_2006,
                    odonnell_2006, 
+                   martinez_2008,
                    butler_2008,
                    norton_2008,
                    butler_2009,
                    kantrowitz_2009,
                    norton_2009,
+                   brittain_2010,
                    kiss_2010, 
+                   chen_2011,
                    dias_2011, 
+                   kelemen_2013,
                    halasz_2013,
+                   lima_2013,
                    cadenhead_2013,
                    calderone_2013,
                    toscano_2013,
                    martinez_2013,
                    serrano_2014,
                    shoshina_2014, 
+                   maher_2016a,
+                   maher_2016b,
                    carter_2017,
                    fernandes_2018, 
                    fernandes_2019,
                    zemon_2021,
                    shoshina_2021a,
                    shoshina_2021b, 
-                   qian_2022) |> 
+                   qian_2022,
+                   kadivar_2024) |> 
   map_df(bind_rows) |> 
   ungroup() |> 
   mutate(study = fct_rev(study), 
@@ -120,6 +131,17 @@ studies_es <- list(schwartz_1985,
          panss_t_meta = if_else(!is.na(PANSS_T), PANSS_T, PANSS_from_BPRS)) 
 ```
 
+## Spatial frequency not available 
+
+For some studies, for some reason the spatil frequency was not available
+
+```{r}
+studies_no_sf <- c("2008 Martinez",
+                   "2016a Maher", 
+                   "2016b Maher", 
+                   "2013 Lima")
+```
+
 ## Contrast sensitivity plot
 
 ```{r}
@@ -140,7 +162,7 @@ p_cs <- studies_long |>
   scale_y_log10(breaks = log_breaks(5)) +
 
   theme_classic(9) +
-  theme(legend.position = c(.9, .05), 
+  theme(legend.position = c(.9, .03), 
         legend.title = element_blank(), 
         axis.line = element_line(linewidth = WIDTH_AXIS),
         axis.ticks = element_line(linewidth = WIDTH_AXIS),
@@ -152,22 +174,23 @@ p_cs <- studies_long |>
 ggsave("figures/paper/sup/p_cs.pdf", 
        p_cs, 
        width = 7.2,
-       height = 11.5)
+       height = 13.5)
 
 ggsave("figures/paper/sup/p_cs.png", 
        p_cs, 
        width = 7.2,
-       height = 11.5)
+       height = 13.5)
 ```
 
 ## Effect size plot
 
 ```{r}
 p_es <- studies_es |> 
+  filter(!(study %in% studies_no_sf)) |> # because there were not details to compute SF 
   mutate(tf_str = paste(tf, "Hz")) |> 
   mutate(tf_str = fct_reorder(tf_str, tf)) |> 
   ggplot(aes(x = sf, y = es, ymin = ci.lo, ymax = ci.hi)) +
-  facet_wrap(vars(study, tf_str), ncol = 6, scales = "free", 
+  facet_wrap(vars(study, tf_str), ncol = 7, scales = "free", 
              labeller = labeller(tf = label_value)) +
   geom_hline(yintercept = 0, lty = 2, linewidth = WIDTH_AXIS) +
   geom_pointrange(size = SIZE_POINT_RANGE * 0.7, color = SINGLE_COLOR) +
@@ -190,12 +213,12 @@ p_es <- studies_es |>
 
 ggsave("figures/paper/sup/p_es.pdf", 
        p_es, 
-       width = 7.2,
+       width = 7.5,
        height = 11.5)
 
 ggsave("figures/paper/sup/p_es.png", 
        p_es, 
-       width = 7.2,
+       width = 7.5,
        height = 11.5)
 ```
 
@@ -260,19 +283,22 @@ p_es_one_plot
 ## Figure one plot
 
 ```{r}
+
+p_stim <- ggdraw() + draw_image(x = 0, y = -0.1, 
+                                            scale = .85,
+                                            "figures/paper/stimulus.png")
 p_example_study <- plot_grid(
+  p_stim,
   p_cs_one_plot, 
   p_es_one_plot, 
-  rel_widths = c(.62, .38),
+  rel_widths = c(.4, .37, .23),
   nrow = 1, 
   labels = "AUTO")
 
 
 ggsave("figures/paper/p_example_study.pdf", p_example_study, 
-       width = 3.5, height = 1.58)
+       width = 5.9, height = 1.58)
 
 ggsave("figures/paper/p_example_study.png", p_example_study, 
-       width = 3.5, height = 1.58)
+       width = 5.9, height = 1.58)
 ```
-
-

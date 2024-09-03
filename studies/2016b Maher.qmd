@@ -1,0 +1,21 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+maher_2016b <- esc_f(f = 7.3, 
+                           grp1n = 20, 
+                           grp2n = 20, 
+                           es.type = "g", 
+                           study = "2016b Maher") |> 
+  as_tibble() |> 
+  mutate(sf = NA, tf = 0) 
+
+maher_2016b
+```
+
+```{r}
+save(maher_2016b, file = "../RData/maher_2016b1.RData")
+```

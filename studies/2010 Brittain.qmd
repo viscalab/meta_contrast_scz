@@ -1,0 +1,67 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+Visual acuity
+
+```{r}
+t.test2 <- function(m1,m2,s1,s2,n1,n2,m0=0,equal.variance=FALSE)
+{
+    if( equal.variance==FALSE ) 
+    {
+        se <- sqrt( (s1^2/n1) + (s2^2/n2) )
+        # welch-satterthwaite df
+        df <- ( (s1^2/n1 + s2^2/n2)^2 )/( (s1^2/n1)^2/(n1-1) + (s2^2/n2)^2/(n2-1) )
+    } else
+    {
+        # pooled standard deviation, scaled by the sample sizes
+        se <- sqrt( (1/n1 + 1/n2) * ((n1-1)*s1^2 + (n2-1)*s2^2)/(n1+n2-2) ) 
+        df <- n1+n2-2
+    }      
+    t <- (m1-m2-m0)/se 
+    dat <- c(m1-m2, se, t, 2*pt(-abs(t),df))    
+    names(dat) <- c("Difference of means", "Std Error", "t", "p-value")
+    return(dat) 
+}
+
+t.test2(1.31, 1.33, 0.22, 0.22, 64, 65)
+```
+
+```{r}
+brittain_2010_long <- tibble(study = "2010 Brittain", 
+                            sf = .5, tf = 0, 
+                            cond = c("control", "patient"), 
+                            m = c(2.24, 2.20), 
+                            sd = c(.13, .14), 
+                            n = c( tabl |> filter(study == "2010 Brittain") |> 
+                                     pluck ("n_control"),
+                                   tabl |> filter(study == "2010 Brittain") |> 
+                                     pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+brittain_2010_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+brittain_2010 <- brittain_2010_long |> 
+  calculate_es()
+
+brittain_2010
+```
+
+```{r}
+brittain_2010_long_plot <- brittain_2010_long |> 
+  mutate(across(c(m, se, sd, lower, upper), ~ 10 ^.x))
+```
+
+```{r}
+save(brittain_2010_long, file = "../RData/brittain_2010_long.RData")
+save(brittain_2010_long_plot, file = "../RData/brittain_2010_long_plot.RData")
+save(brittain_2010, file = "../RData/brittain_2010.RData")
+```

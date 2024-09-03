@@ -1,0 +1,27 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+bidwell_2006 <- esc_t(t = 0.78,     
+      grp1n =  tabl |> 
+        filter(study == "2006 Bidwell") |> 
+        pluck ("n_control"), 
+      grp2n = tabl |> 
+        filter(study == "2006 Bidwell") |> 
+        pluck ("n_patient"), 
+      es.type = "g") |> 
+  as_tibble() |> 
+  mutate(sf = .5, tf = 5) |> 
+  relocate(sf, tf) |> 
+  mutate(study = "2006 Bidwell") |> 
+  relocate(study)
+
+bidwell_2006
+```
+
+```{r}
+save(bidwell_2006, file = "../RData/bidwell_2006.RData")
+```

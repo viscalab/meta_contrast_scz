@@ -1,0 +1,25 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+martinez_2008 <- esc_f(f = 27.7, 
+                           grp1n = tabl |> 
+                         filter(study == "2008 Martinez") |> 
+                         pluck ("n_control"), 
+                           grp2n = tabl |> 
+                         filter(study == "2008 Martinez") |> 
+                         pluck ("n_patient"), 
+                           es.type = "g", 
+                           study = "2008 Martinez") |> 
+  as_tibble() |> 
+  mutate(sf = NA, tf = 0) 
+
+martinez_2008
+```
+
+```{martinez_2008}
+save(martinez_2008, file = "../RData/martinez_2008.RData")
+```

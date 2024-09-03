@@ -1,0 +1,54 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+maher_2016a_control <- c(.04, .02, .02, .10, .06, .02, .02, .05, .02, .08, .04, 
+                        .04, .07, .06, .03, .07, .02, .01, .12, .02, .02, .07, 
+                        .03)
+
+maher_2016a_patient <- c(.18, .03, .02, .02, .03, .03, .16, .03, .06, .03, .02, 
+                        .16, .16, .20, .18, .07, .12, .04, .03, .02, .07, .07, 
+                        .20, .02)
+
+maher_2016a_long <- tibble(study = "2016a Maher", 
+                            sf = NA, tf = 0,
+                            cond = c("control", "patient"), 
+                            m = c(mean(maher_2016_control), 
+                                  mean(maher_2016_patient)), 
+                            sd = c(sd(maher_2016_control), 
+                                   sd(maher_2016_patient)), 
+                            n = c(tabl |> filter(study == "2016a Maher") |> 
+                                    pluck ("n_control"),
+                                  tabl |> filter(study == "2016a Maher") |> 
+                                    pluck ("n_patient"))) |> 
+  mutate(se = sd / sqrt(n), 
+         lower = m - se, 
+         upper = m + se) 
+
+maher_2016a_long |>
+  ggplot(aes(x = sf, y = m, ymin = lower, ymax = upper, color = cond)) +
+    geom_pointrange() 
+```
+
+```{r}
+maher_2016a_long_plot <- maher_2016a_long |> 
+  mutate(across(c(m, lower, upper), ~ 1 / .x)) |> 
+  rename(lower = upper, upper = lower) |> 
+  select(-sd, -se)
+```
+
+```{r}
+maher_2016a <- maher_2016a_long |> 
+  calculate_es(sf, reverse = TRUE)
+
+maher_2016a
+```
+
+```{r}
+save(maher_2016a_long, file = "../RData/maher_2016a_long.RData")
+save(maher_2016a_long_plot, file = "../RData/maher_2016a_long_plot.RData")
+save(maher_2016a, file = "../RData/maher_2016a.RData")
+```

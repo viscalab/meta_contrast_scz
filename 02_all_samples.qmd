@@ -8,7 +8,8 @@ editor: visual
 
 ```{r}
 studies_es_chronic <- studies_es |> 
-    filter(!(study %in% c("2021a Shoshina", "2010 Kiss")))
+    filter(!(study %in% c("2021a Shoshina", "2010 Kiss"))) |> 
+  anti_join(studies_es_without_sf)
   
 meta_all_samples <- rma.mv(yi = es, 
                    V = var, 
@@ -25,8 +26,7 @@ meta_all_samples
 meta_all_samples$pval
 ```
 
-
-## Heterogeneity 
+## Heterogeneity
 
 ```{r}
 var.comp(meta_all_samples)
@@ -71,7 +71,6 @@ p_meta_all_samples_sf <- ggplot(studies_es_chronic) +
 p_meta_all_samples_sf
 ```
 
-
 ```{r}
 meta_all_samples_tf <- rma.mv(yi = es, 
                    V = var, 
@@ -105,8 +104,6 @@ p_meta_all_samples_tf <- ggplot(studies_es_chronic) +
 p_meta_all_samples_tf
 ```
 
-
-
 ## Figure tf and sf
 
 ```{r}
@@ -129,7 +126,6 @@ ggsave("figures/paper/p_all_samples_tf_sf.png",
        )
 ```
 
-
 ## CPZ
 
 ```{r}
@@ -145,11 +141,7 @@ meta_all_samples_cpz <- rma.mv(yi = es,
 meta_all_samples_cpz
 ```
 
-
-
-
 ## Testing the interaction of dv with spatial frequency
-
 
 ```{r}
 studies_one_sample_chronic |> 
@@ -190,4 +182,3 @@ sf_dv_interact_only_cs
 ```{r}
 anova(sf_dv_interact_only_cs, btt = 4)
 ```
-

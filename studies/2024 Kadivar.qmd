@@ -1,0 +1,37 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+kadivar_2024_scrap <- scrap_fun("../data_scrap/2024 Kadivar.csv",
+                             sf = 1.22, 
+                             control = c("upper", "lower"), 
+                             patient = c("upper", "lower")) |> 
+  mutate(tf = 8.33) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+kadivar_2024_long <- estimate_se(kadivar_2024_scrap, 
+            eb = "se", 
+            ns = c(tabl |> filter(study == "2024 Kadivar") |> pluck ("n_control"), 
+                   tabl |> filter(study == "2024 Kadivar") |> pluck ("n_patient")))
+
+kadivar_2024 <- kadivar_2024_long |> 
+  calculate_es(sf)
+
+kadivar_2024
+```
+
+```{r}
+kadivar_2024_long_plot <- kadivar_2024_long |> 
+  mutate(across(c(m, se, sd, lower, upper), ~ 10^.x))
+```
+
+```{r}
+save(kadivar_2024_long, file = "../RData/kadivar_2024_long.RData")
+save(kadivar_2024_long_plot, file = "../RData/kadivar_2024_long_plot.RData")
+save(kadivar_2024, file = "../RData/kadivar_2024.RData")
+```

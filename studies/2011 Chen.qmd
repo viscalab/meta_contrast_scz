@@ -1,0 +1,43 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+chen_2011_scrap <- scrap_fun("../data_scrap/2011 Chen.csv",
+                                 sf = c(4, 0.5),
+                                 control = c("upper", "m"), 
+                                 patient = c("lower", "m")) |> 
+  mutate(tf = if_else(sf == 0.5, 5, 0)) |> 
+  relocate(tf, .after = sf)
+```
+
+```{r}
+chen_2011_long <- chen_2011_scrap |> 
+  estimate_se(eb = "se", 
+              ns = c(tabl |> filter(study == "2011 Chen") |> 
+                        pluck ("n_control"), 
+                      tabl |> filter(study == "2011 Chen") |> 
+                        pluck ("n_patient")))
+
+```
+
+```{r}
+chen_2011_long_plot <- chen_2011_long |> 
+  mutate(across(c(m, lower, upper), ~ 1 / .x)) |> 
+  rename(lower = upper, upper = lower) |> 
+  select(-sd, -se)
+```
+
+```{r}
+chen_2011 <- chen_2011_long |> 
+  calculate_es(sf, reverse = TRUE)
+
+chen_2011
+```
+
+```{r}
+save(chen_2011_long, file = "../RData/chen_2011_long.RData")
+save(chen_2011, file = "../RData/chen_2011.RData")
+```
