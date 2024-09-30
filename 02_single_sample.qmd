@@ -121,14 +121,11 @@ p_sf_used <- studies_es_sf |>
 p_tf_sf <- plot_grid(
   p_tf_used,
   p_sf_used, 
-  rel_widths = c(.55, .45)
-)
+  rel_widths = c(.55, .45))
 
-ggsave("figures/paper/sup/p_tf_sf.pdf", p_tf_sf, 
-       width = 7.2, height = 7.5)
+ggsave("figures/paper/sup/p_tf_sf.pdf", p_tf_sf, width = 7.2, height = 7.5)
 
-ggsave("figures/paper/sup/p_tf_sf.png", p_tf_sf, 
-       width = 7.2, height = 7.5)
+ggsave("figures/paper/sup/p_tf_sf.png", p_tf_sf, width = 7.2, height = 7.5)
 
 ```
 
@@ -186,7 +183,6 @@ p_one_sample_forest <- as.ggplot(
           rightlabs = c("g", "95% CI", "Weight")), 
   scale = 1, hjust = 0, vjust = 0.04)
 
-p_one_sample_forest
 
 ggsave("figures/paper/sup/p_forest_all.pdf", p_one_sample_forest, 
        width = 8, height = 11.1)
@@ -196,8 +192,6 @@ ggsave("figures/paper/sup/p_forest_all.png", p_one_sample_forest,
 ```
 
 ### Medication
-
-CPZ
 
 ```{r}
 meta_one_sample_cpz <- metareg(meta_one_sample, ~ cpz)
@@ -218,11 +212,16 @@ meta_one_sample_p_med
 ```{r}
 meta_one_sample_influential <- InfluenceAnalysis(meta_one_sample, random = TRUE)
 
-p_influential <- meta_one_sample_influential$Data |> 
-  mutate(Author = str_remove_all(Author, "Omitting ")) |> 
-  ggplot(aes(x = HetContrib, y = InfluenceEffectSize)) +
-  geom_text_repel(aes(label = Author), max.overlaps = 4) +
-  geom_point(alpha = .5)  +
+data_p_influential <- meta_one_sample_influential$Data |> 
+  mutate(Author = str_remove_all(Author, "Omitting ")) 
+
+p_influential <- ggplot() +
+  geom_text_repel(data = data_p_influential |> 
+                    filter(HetContrib > 23), 
+                  aes(x = HetContrib, y = InfluenceEffectSize, 
+                      label = Author), max.overlaps = 3) +
+  geom_point(data = data_p_influential, 
+             aes(x = HetContrib, y = InfluenceEffectSize), alpha = .5)  +
   labs(x = "Overall heterogeneity contribution", y = "Influence on pooled result") +
   theme_classic(14) +
     theme(axis.line = element_line(linewidth = WIDTH_AXIS),
@@ -230,12 +229,6 @@ p_influential <- meta_one_sample_influential$Data |>
         legend.position = "none")
 
 p_influential
-
-ggsave("figures/paper/p_influential.pdf", p_influential, 
-       width = 4.6, height = 4.6)
-
-ggsave("figures/paper/p_influential.png", p_influential, 
-       width = 4.6, height = 4.6)
 ```
 
 ## Chronic patients
@@ -276,14 +269,7 @@ p_one_sample_chronic_forest <- as.ggplot(
           leftlabs = c("Study", "Sample size"),
           rightlabs = c("g", "95% CI", "Weight")), 
   scale = 2, hjust = 0, vjust = 0.04)
-
-ggsave("figures/paper/p_forest_chronic.pdf", p_one_sample_chronic_forest, 
-       width = 8, height = 11)
-
-ggsave("figures/paper/p_forest_chronic.png", p_one_sample_chronic_forest, 
-       width = 8, height = 11)
 ```
-
 
 ### Publication bias
 
@@ -309,11 +295,7 @@ p_one_sample_funnel <- ggplot() +
     theme(axis.line = element_line(linewidth = WIDTH_AXIS),
           axis.ticks = element_line(linewidth = WIDTH_AXIS))
 
-ggsave("figures/paper/p_funnel.pdf", p_one_sample_funnel, 
-       width = 4, height = 4)
-
-ggsave("figures/paper/p_funnel.png", p_one_sample_funnel, 
-       width = 4, height = 4)
+p_one_sample_funnel
 ```
 
 ## Age
@@ -387,7 +369,6 @@ CPZ
 meta_one_sample_chronic_cpz <- metareg(meta_one_sample_chronic, ~ cpz)
 
 meta_one_sample_chronic_cpz
-
 ```
 
 ```{r}
@@ -411,12 +392,33 @@ p_one_sample_cpz <- ggplot(studies_one_sample_chronic |>
         axis.ticks = element_line(linewidth = WIDTH_AXIS))
 
 p_one_sample_cpz
+```
 
-ggsave("figures/paper/p_one_sample_cpz.pdf", p_one_sample_cpz, 
-       width = 5, height = 5)
+## Main figure
 
-ggsave("figures/paper/p_one_sample_cpz.png", p_one_sample_cpz, 
-       width = 5, height = 5)
+```{r}
+p_influential_funnel_cpz <- plot_grid(p_influential, 
+                                  p_one_sample_funnel, 
+                                  p_one_sample_cpz,
+                                  NA,
+                                  ncol = 1, 
+                                  rel_heights = c(.32, .32, .32, .06),
+                                  labels = c("A", "C", "D", ""), 
+                                  axis = "l",
+                                  align = "v")
+
+
+p_influential_funnel_forest <- plot_grid(p_influential_funnel_cpz, 
+                                         p_one_sample_chronic_forest,
+                                         rel_widths = c(.3, .7),
+                                         labels = c("", "B"))
+
+
+ggsave("figures/paper/p_influential_funnel_forest.pdf", p_influential_funnel_forest, 
+       width = 12, height = 11)
+
+ggsave("figures/paper/p_influential_funnel_forest.png", p_influential_funnel_forest, 
+       width = 12, height = 11)
 ```
 
 ### Proportion of medicated patients
@@ -426,6 +428,7 @@ meta_one_sample_chronic_p_med <- metareg(meta_one_sample_chronic, ~ p_med)
 
 meta_one_sample_chronic_p_med
 ```
+
 ### Severity of symptons
 
 ```{r}
@@ -433,22 +436,25 @@ meta_one_sample_chronic_panss <- metareg(meta_one_sample_chronic, ~ panss_t_meta
 
 meta_one_sample_chronic_panss
 ```
+
 ### Illness duration
 
 ```{r}
-meta_one_sample_chronic_dur_illness <- metareg(meta_one_sample_chronic, ~ dur_illness)
+meta_one_sample_chronic_dur_illness <- metareg(meta_one_sample_chronic, 
+                                               ~ dur_illness)
 
 meta_one_sample_chronic_dur_illness
 ```
 
-
 ### luminance
 
 ```{r}
-meta_one_sample_chronic_luminance <- metareg(meta_one_sample_chronic, ~ luminance)
+meta_one_sample_chronic_luminance <- metareg(meta_one_sample_chronic, 
+                                             ~ luminance)
 
 meta_one_sample_chronic_luminance
 ```
+
 ### duration
 
 ```{r}
@@ -456,6 +462,7 @@ meta_one_sample_chronic_duration <- metareg(meta_one_sample_chronic, ~ duration)
 
 meta_one_sample_chronic_duration
 ```
+
 ### size
 
 ```{r}
@@ -464,53 +471,20 @@ meta_one_sample_chronic_size <- metareg(meta_one_sample_chronic, ~ size)
 meta_one_sample_chronic_size
 ```
 
-```{r}
-ggplot(studies_one_sample_chronic |> 
-                             drop_na(size), 
-                           aes(x = size, y = es)) +
-    geom_abline(intercept = meta_one_sample_chronic_size |> 
-                tidy() |> 
-                filter(term == "intercept") |> 
-                pull(estimate), 
-              slope = meta_one_sample_chronic_size |> 
-                tidy() |> 
-                filter(term == "size") |> 
-                pull(estimate), 
-              color = "grey") +
-  geom_point() +
-  geom_text_repel(aes (label = study), size = 2.5) +
-  labs(x = "Size (deg)", y = LABEL_EFFECT_SIZE) +
-  theme_classic(16) +
-    theme(axis.line = element_line(linewidth = WIDTH_AXIS),
-        axis.ticks = element_line(linewidth = WIDTH_AXIS))
+### age
 
+```{r}
+meta_one_sample_chronic_age <- metareg(meta_one_sample_chronic, ~ years_patient)
+
+meta_one_sample_chronic_age
 ```
+
 ### Gender
 
 ```{r}
 meta_one_sample_chronic_p_gender <- metareg(meta_one_sample_chronic, ~ p_gender)
 
 meta_one_sample_chronic_p_gender
-```
-```{r}
-ggplot(studies_one_sample_chronic |> 
-                             drop_na(p_gender), 
-                           aes(x = p_gender, y = es)) +
-    geom_abline(intercept = meta_one_sample_chronic_p_gender |> 
-                tidy() |> 
-                filter(term == "intercept") |> 
-                pull(estimate), 
-              slope = meta_one_sample_chronic_p_gender |> 
-                tidy() |> 
-                filter(term == "p_gender") |> 
-                pull(estimate), 
-              color = "grey") +
-  geom_point() +
-  geom_text_repel(aes (label = study), size = 2.5) +
-  labs(x = "Proportion females", y = LABEL_EFFECT_SIZE) +
-  theme_classic(16) +
-    theme(axis.line = element_line(linewidth = WIDTH_AXIS),
-        axis.ticks = element_line(linewidth = WIDTH_AXIS))
 ```
 
 ### Eccentricity
@@ -520,6 +494,7 @@ meta_one_sample_chronic_ecc <- metareg(meta_one_sample_chronic, ~ ecc)
 
 meta_one_sample_chronic_ecc
 ```
+
 ```{r}
 ggplot(studies_one_sample_chronic |> 
                              drop_na(ecc), 
@@ -539,80 +514,6 @@ ggplot(studies_one_sample_chronic |>
   theme_classic(16) +
     theme(axis.line = element_line(linewidth = WIDTH_AXIS),
         axis.ticks = element_line(linewidth = WIDTH_AXIS))
-```
-
-```{r}
-meta_one_sample_chronic_without_serrano <- metagen(TE = es, seTE = se, 
-                           studlab = study, 
-                           fixed = FALSE, 
-                           random = TRUE,
-                           sm = "SMD", 
-                           hakn = TRUE,
-                           data = studies_one_sample_chronic |> 
-                            filter(study != "2014 Serrano-Pedraza"))
-
-meta_one_sample_chronic_without_serrano
-```
-
-```{r}
-studies_one_sample_chronic |> 
-  drop_na(duration) |> 
-  ungroup() |> 
-  summarise(m = mean(duration))
-
-studies_one_sample_chronic |> 
-  ggplot(aes(duration)) +
-  geom_histogram() +
-  scale_x_continuous(breaks = seq(0, 1000, 100)) +
-  scale_y_continuous(breaks = 1:10)
-```
-
-```{r}
-meta_one_sample_chronic_without_serrano_ecc <- metareg(meta_one_sample_chronic_without_serrano, ~ ecc)
-
-meta_one_sample_chronic_without_serrano_ecc
-```
-
-```{r}
-p_one_sample_ecc <- ggplot(studies_one_sample_chronic |> 
-                             drop_na(ecc), 
-                           aes(x = ecc, y = es)) +
-    geom_abline(intercept = meta_one_sample_chronic_ecc |>
-                tidy() |>
-                filter(term == "intercept") |>
-                pull(estimate),
-              slope = meta_one_sample_chronic_ecc |>
-                tidy() |>
-                filter(term == "ecc") |>
-                pull(estimate),
-              color = "darkgrey") +
-  geom_point() +
-  geom_text_repel(aes (label = study), size = 2.5) +
-  labs(x = "Eccentricity (deg)", y = LABEL_EFFECT_SIZE) +
-  theme_classic(16) +
-  theme(axis.line = element_line(linewidth = WIDTH_AXIS),
-        axis.ticks = element_line(linewidth = WIDTH_AXIS), 
-        legend.position = "none")
-  
-p_one_sample_ecc
-```
-
-
-
-## Method used
-
-```{r}
-n_staircase_studies_one_sample <- studies_one_sample|> 
-  filter(method == "staircase") |> 
-  nrow()
-
-n_limits_studies_one_sample <- studies_one_sample |> 
-  filter(method == "limits") |> 
-  nrow()
-
-n_cs_studies_one_sample <- studies_one_sample |> 
-  filter(method == "constant stimuli") |> 
-  nrow()
 ```
 
 ## Type of task
@@ -651,22 +552,18 @@ update(meta_one_sample_chronic_task,
        tau.common = FALSE)
 ```
 
+## Method used
+
 ```{r}
-p_influential_funnel <- plot_grid(p_influential, 
-                                  p_one_sample_funnel, 
-                                  NA,
-                                  ncol = 1, 
-                                  rel_heights = c(.4, .4, .2),
-                                  labels = c("A", "C", ""))
+n_staircase_studies_one_sample <- studies_one_sample|> 
+  filter(method == "staircase") |> 
+  nrow()
 
+n_limits_studies_one_sample <- studies_one_sample |> 
+  filter(method == "limits") |> 
+  nrow()
 
-p_influential_funnel_forest <- plot_grid(p_influential_funnel, 
-                                         p_one_sample_chronic_forest,
-                                         rel_widths = c(.3, .7),
-                                         labels = c("", "B"))
-
-
-ggsave("figures/paper/p_influential_funnel_forest.pdf", p_influential_funnel_forest, 
-       width = 12, height = 11)
-
+n_cs_studies_one_sample <- studies_one_sample |> 
+  filter(method == "constant stimuli") |> 
+  nrow()
 ```

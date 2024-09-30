@@ -50,13 +50,12 @@ tabl_dem_clin_par <- tabl_raw |>
   align = "center"
 ) |> 
     tab_footnote(
-    footnote = "2IFC: Two-interval forced choice; 2AFC: Spatial two-alternative forced choice",
+    footnote = "2IFC: Two-interval forced choice; 2SFC: Spatial two-alternative forced choice",
     locations = cells_column_labels(columns = task)
   ) |> 
     tab_options(
     column_labels.font.weight = "bold",
-    row_group.font.size = 14)
+    row_group.font.size = 8) 
 
-gtsave(tabl_dem_clin_par, "figures/paper/table_dem_clin_par.png", 
-       vwidth = 2300, vheight = 800)
+gtsave(tabl_dem_clin_par, filename = "figures/paper/table_dem_clin_par.html")
 ```

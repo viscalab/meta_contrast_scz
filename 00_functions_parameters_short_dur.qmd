@@ -4,7 +4,6 @@ format: html
 editor: visual
 ---
 
-
 ## Reading table with demographic, and clinical & stimulus parameters
 
 ```{r}
@@ -23,4 +22,3 @@ tabl_short_dur <- tabl_raw_short_dur |>
   relocate(p_gender, .after = f_patient) |> 
   mutate(luminance = as.numeric(luminance))
 ```
-

@@ -5,7 +5,7 @@ editor: visual
 ---
 
 ```{r}
-toscano_2013_scrap <- scrap_fun("../data_scrap/2013 Toscano.csv",
+nogueira_2013_scrap <- scrap_fun("../data_scrap/2013 Nogueira.csv",
                                 log = TRUE,
                              sf = c(.6, 5, 10, 20), 
                              control = c("upper", "lower"), 
@@ -15,20 +15,20 @@ toscano_2013_scrap <- scrap_fun("../data_scrap/2013 Toscano.csv",
 ```
 
 ```{r}
-toscano_2013_long <- toscano_2013_scrap |> 
+nogueira_2013_long <- nogueira_2013_scrap |> 
   estimate_se(eb = "se", 
-               ns = c(tabl |> filter(study == "2013 Toscano") |> 
+               ns = c(tabl |> filter(study == "2013 Nogueira") |> 
                         pluck ("n_control"), 
-                      tabl |> filter(study == "2013 Toscano") |> 
+                      tabl |> filter(study == "2013 Nogueira") |> 
                         pluck ("n_patient")))
 
-toscano_2013 <- toscano_2013_long |> 
+nogueira_2013 <- toscano_2013_long |> 
   calculate_es(sf)
 
-toscano_2013
+nogueira_2013
 ```
 
 ```{r}
-save(toscano_2013_long, file = "../RData/toscano_2013_long.RData")
-save(toscano_2013, file = "../RData/toscano_2013.RData")
+save(nogueira_2013_long, file = "../RData/nogueira_2013_long.RData")
+save(nogueira_2013, file = "../RData/nogueira_2013.RData")
 ```

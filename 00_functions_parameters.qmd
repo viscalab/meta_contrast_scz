@@ -63,6 +63,15 @@ tabl <- tabl_raw |>
   mutate(luminance = as.numeric(luminance))
 ```
 
+## Studies with non-avaliable spatial frequency
+
+```{r}
+studies_no_sf <- c("2008 Martinez",
+                   "2016a Maher", 
+                   "2016b Maher", 
+                   "2013 Lima")
+```
+
 ## Parameters for the graphs
 
 ```{r}

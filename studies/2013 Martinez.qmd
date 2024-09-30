@@ -9,7 +9,7 @@ martinez_2013_sf_1_long <- tibble(study = "2013 Martinez",
                             sf = 1.166, tf = 0, # mean .5, 1, 2
                             cond = c("control", "patient"), 
                             m = c(132.6, 79.4), 
-                            sd = c(38.3, 34), 
+                            sd = c(38.3, 35.1), 
                             n = c(tabl |> filter(study == "2013 Martinez") |> 
                                     pluck ("n_control"),
                                   tabl |> filter(study == "2013 Martinez") |> 

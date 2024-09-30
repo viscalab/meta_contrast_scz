@@ -11,7 +11,7 @@ table_p_med_chronic <- create_table_moderator(meta_one_sample_chronic_p_med, "Pr
 
 table_illness_dur_chronic <- create_table_moderator(meta_one_sample_chronic_dur_illness, "Illness duration") 
 
-table_illness_p_gender_chronic <- create_table_moderator(meta_one_sample_chronic_p_gender, "Patient gender") 
+table_illness_p_gender_chronic <- create_table_moderator(meta_one_sample_chronic_p_gender, "Proportion females") 
 
 table_illness_size_chronic <- create_table_moderator(meta_one_sample_chronic_size, "Stimulus size") 
 
@@ -23,39 +23,38 @@ table_illness_ecc_chronic <- create_table_moderator(meta_one_sample_chronic_ecc,
 
 table_panss_chronic <- create_table_moderator(meta_one_sample_chronic_panss, "PANSS total") 
 
+table_age_chronic <- create_table_moderator(meta_one_sample_chronic_age, "Age") 
 
 
 table_sf <- create_table_moderator(meta_all_samples_sf, "Spatial frequency") 
 
 table_tf <- create_table_moderator(meta_all_samples_tf, "Temporal frequency") 
 
-table_cpz_all <- create_table_moderator(meta_all_samples_cpz, "CPZ ") 
+table_all_cpz <- create_table_moderator(meta_all_samples_cpz_sf_tf, "CPZ ") 
 
 table_moderators <- table_cpz_chronic |> 
   bind_rows(table_p_med_chronic) |> 
-  bind_rows(table_illness_dur_chronic) |> 
   bind_rows(table_panss_chronic) |> 
-  bind_rows(table_illness_p_gender_chronic) |> 
-  bind_rows(table_illness_size_chronic) |> 
-  bind_rows(table_illness_duration_chronic) |> 
+  bind_rows(table_illness_dur_chronic) |> 
+  bind_rows(table_age_chronic) |> 
   bind_rows(table_illness_luminance_chronic) |> 
+  bind_rows(table_illness_duration_chronic) |> 
+  bind_rows(table_illness_size_chronic) |> 
+  bind_rows(table_illness_p_gender_chronic) |> 
   bind_rows(table_illness_ecc_chronic) |> 
-
   bind_rows(table_sf) |> 
   bind_rows(table_tf) |> 
-  bind_rows(table_cpz_all) |>
   gt() |> 
     cols_align("center") |> 
       tab_row_group(
     label = "Using all samples from each study",
-    rows = moderator %in% c("Spatial frequency", "Temporal frequency",
-    "CPZ ")) |>
+    rows = moderator %in% c("Spatial frequency", "Temporal frequency")) |>
     tab_row_group(
     label = "Using one sample from each study",
     rows = moderator %in% c("CPZ", "Prop. medicated", "PANSS total", 
-                            "Illness duration", "Patient gender", 
-                            "Stimulus size", "Stimulus duration",
-                            "Luminance", "Eccentricity")) |> 
+                            "Illness duration", "Age", "Luminance", 
+                            "Stimulus duration", "Stimulus size",
+                            "Proportion females", "Eccentricity")) |> 
 
   tab_spanner(
     label = "Intercept", 
@@ -90,10 +89,8 @@ table_moderators
 
 gtsave(table_moderators, "figures/paper/table_moderators.png")
 
-
 save(table_moderators, file = "RData/table_moderators.RData")
 ```
-
 
 ### Supplementary table
 
@@ -149,4 +146,3 @@ table_moderators_sup
 gtsave(table_moderators_sup, "figures/paper/table_moderators_sup.png")
 
 ```
-
