@@ -151,6 +151,8 @@ p_meta_all_samples_sf_discr_cpz
 
 ggsave("figures/paper/sup/p_all_samples_tf_sf.png", p_meta_all_samples_sf_discr_cpz, 
        width = 4, height = 2.5)
+ggsave("figures/paper/sup/p_all_samples_tf_sf.pdf", p_meta_all_samples_sf_discr_cpz, 
+       width = 4, height = 2.5)
 ```
 
 ## SF

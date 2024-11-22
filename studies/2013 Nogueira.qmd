@@ -22,7 +22,7 @@ nogueira_2013_long <- nogueira_2013_scrap |>
                       tabl |> filter(study == "2013 Nogueira") |> 
                         pluck ("n_patient")))
 
-nogueira_2013 <- toscano_2013_long |> 
+nogueira_2013 <- nogueira_2013_long |> 
   calculate_es(sf)
 
 nogueira_2013

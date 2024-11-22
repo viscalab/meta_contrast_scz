@@ -58,4 +58,6 @@ tabl_dem_clin_par <- tabl_raw |>
     row_group.font.size = 8) 
 
 gtsave(tabl_dem_clin_par, filename = "figures/paper/table_dem_clin_par.html")
+
+gtsave(tabl_dem_clin_par, filename = "figures/paper/table_dem_clin_par.docx")
 ```

@@ -87,6 +87,8 @@ table_moderators <- table_cpz_chronic |>
 
 table_moderators
 
+gtsave(table_moderators, "figures/paper/table_moderators.docx")
+
 gtsave(table_moderators, "figures/paper/table_moderators.png")
 
 save(table_moderators, file = "RData/table_moderators.RData")
@@ -142,6 +144,8 @@ table_moderators_sup <- table_cpz |>
 
 
 table_moderators_sup
+
+gtsave(table_moderators_sup, "figures/paper/table_moderators_sup.docx")
 
 gtsave(table_moderators_sup, "figures/paper/table_moderators_sup.png")
 
